@@ -1,0 +1,73 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <link href="view.css" rel="stylesheet" type="text/css" charset="UTF-8">
+        <script src="components/HackTimer.js" charset="UTF-8"></script>
+        <script src="components/jquery-1.11.3.js" charset="UTF-8"></script>
+        <script src="components/jquery.color-2.1.0.js" charset="UTF-8"></script>
+
+        <script src="components/comboBox.js" charset="UTF-8"></script>
+        <script src="components/labeledSlider.js" charset="UTF-8"></script>
+
+        <script src="components/dbEntityView.js" charset="UTF-8"></script>
+        <script src="components/dbView.js" charset="UTF-8"></script>
+        <script src="components/networkNodeView.js" charset="UTF-8"></script>
+        <script src="components/networkView.js" charset="UTF-8"></script>
+        <!-- <script src="components/jobStatusView.js" charset="UTF-8"></script> -->
+        <script src="components/searchView.js" charset="UTF-8"></script>
+        <script src="domain/model3d.js" charset="UTF-8"></script>
+
+        <script src="../config.js" charset="UTF-8"></script>
+        <script src="../sim.js" charset="UTF-8"></script>
+        <script src="../messages.js" charset="UTF-8"></script>
+        <!-- <script src="../job.js" charset="UTF-8"></script> -->
+        <script src="../tools.js" charset="UTF-8"></script>
+        <script src="view.js" charset="UTF-8"></script>
+        <script src="client.js" charset="UTF-8"></script>
+        <script src="network.js" charset="UTF-8"></script>
+    </head>
+    <body id="body" onload="app.init()">
+        <div id="workspace">
+            <div id="header">
+                <div id="connection">undefined</div>
+                <a target="_blank" href="../doc/ass1.html">&#x279f; ass1</a> &#x2022;
+                <a target="_blank" href="../doc/org.html">&#x279f; org</a>
+            </div>
+
+            <div id="requester" class="paper" style="float: left;">
+                <div id="tab-header" class="pheader">
+                    <div id="tab-header-add" class="tab-add" onclick="view.insertTab()">+</div>
+                </div>
+                <div id="tab-content"></div>
+            </div>
+
+            <div style="float:right;">
+                <div id="database" class="paper">
+                    <div class="pheader"><div class="tab-active">&#x26C1; Database</div></div>
+                    <div id="info">
+                        <div id="workerJobs" style="width:80;height:23; display:inline-block"></div>
+                        <button onclick="app.db.nextPage()" style="float:right;height:21;width:28;font-size: 9px;padding-top: 0px;">&#x25b7;</button>
+                        <button onclick="app.db.prevPage()" style="float:right;height:21;width:28;margin-right:-1;font-size: 9px;padding-top: 0px;">&#x25c1;</button>
+                    </div>
+                    <div id="entities"></div>
+                </div>
+
+                <div id="system" class="paper">
+                    <div class="pheader"><div class="tab-active">&#x260d; Network</div></div>
+                    <div id="info">
+                        <div class="firstobject">
+                            <button style="float:right;height:21;" onclick="app.reloadAll()"><!--&#x1F503;--> &#x21bb all clients</button>
+                            <button style="float:right;margin: 0 5 0 0" onclick="window.open('./view.html', '_blank')">client++</button>
+                        </div>
+                        <div id="nodes"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="footer">
+                <div id="footer-server" style="margin: auto;"></div>
+                <div id="footer-students" style="margin: auto;"></div>
+            </div>
+         </div>
+    </body>
+</html>

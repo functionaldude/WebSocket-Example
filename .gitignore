@@ -1,0 +1,9 @@
+*.config
+*.files
+*.includes
+*.creator
+*.working
+*vpp~*
+.directory
+.idea
+

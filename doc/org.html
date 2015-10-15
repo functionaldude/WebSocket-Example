@@ -1,0 +1,96 @@
+<html>
+    <head>
+        <link href="doc.css" rel="stylesheet" type="text/css">
+    </head>
+    <body id="body" onload="app.init()">
+        <div id="header">
+            <div id="connection">SVU 2015 Documentation</div>
+            <a target="_blank" href="../client/view.html">app</a> &#x2022;
+            <a target="_blank" href="../doc/ass1.html">&#x279f; ass1</a> &#x2022;
+        </div>
+
+                <div class="column">
+            <div class="paper">
+                <div class="pheader"><div class="tab-active">&#x2698;</div></div>
+                <div class="content">
+                    <h1>Installation</h1>
+                    <div class="line"></div>
+                    <h2>Installing required packages:</h2>
+                        <br>
+                        <p>You need to install the <a href="https://nodejs.org">Node.js JavaScript runtime</a>.</p>
+                        <p>On deb-based Linux distributions, use the following command:</p>
+                        <code>sudo apt-get install nodejs &#8629;<br></code>
+                        <p>On Macs with the <a href="http://brew.sh">Homebrew</a> package manager installed, use:</p>
+                        <code>brew install node &#8629;<br></code>
+
+                        <p>All required libraries are pre-installed in the repository.</p>
+
+                        <p>Download test data from <a href="https://student.cgv.tugraz.at/assets/db.zip">here</a> and unpack it to a folder <code>db</code>.</p>
+
+                        <br><div class="line"></div>
+
+                    <h2>Starting the server:</h2>
+                        <br>
+                        <code>
+                            cd server &#8629;<br>
+                            nodejs server.js &#8629;<br><br>
+                            <i>note:</i> on some systems the command is 'node' instead of 'nodejs'<br>
+                        </code>
+                        <br><div class="line"></div>
+
+                    <h2>Starting the client:</h2>
+                        <br>
+                        <a target="_blank" href="http://localhost:1337/client/view.html">http://localhost:1337/client/view.html</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="column">
+            <div class="paper">
+                <div class="pheader"><div class="tab-active">&#x2709;</div></div>
+                <div class="content">
+                    <h1>Submission</h1>
+                    <div class="line"></div>
+                    <p>
+                        You have to fill in the code where you find Student TODOs.
+                        </p>
+                    <p>
+                   The version of your solved assignment that is going to be graded is
+                   the <b>last version commited before the deadline</b>: 23:59, Friday 20.11.2015.
+                   </p>
+                   <p>
+                   Please do not change the given folder structure.
+                   </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="column">
+            <div class="paper">
+                <div class="pheader"><div class="tab-active">&#x1f393;</div></div>
+                <div class="content">
+                    <h1>Literature</h1>
+                    <div class="line"></div>
+                    Here are some useful links that you  might find useful for this exercise:
+                    <ul>
+                    <li><a href="https://www.youtube.com/watch?v=v2ifWcnQs6M">Douglas Crockford: The JavaScript Programming Language</a>
+                    <li><a target="_blank" href="http://www.w3schools.com/js/js_objects.asp">JavaScript Objects w3schools Tutorial</a>
+                    <li><a href="http://www.w3schools.com/jsref/jsref_obj_array.asp">JavaScript Array Reference</a>
+                    <li>Websockets: <a href="http://www.html5rocks.com/en/tutorials/websockets/basics/">WebSocket</a>
+                    for client and <a href="https://www.npmjs.com/package/ws">WebSocketServer</a> for server
+                    <li><a href="https://en.wikipedia.org/wiki/XMLHttpRequest">XMLHttpRequest</a>
+                    and <a href="http://api.jquery.com/jquery.getjson/">jQuery.getJSON</a> for sending requests to the server and loading objects back into the script
+                    <li><a href="https://en.wikipedia.org/wiki/Euclidean_distance">Euclidean distance</a>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+
+
+        <div id="footer">
+            <div id="footer-server" style="margin: auto;"></div>
+            <div id="footer-students" style="margin: auto;"></div>
+        </div>
+    </body>
+</html>
