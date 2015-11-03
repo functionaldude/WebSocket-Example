@@ -1,11 +1,11 @@
-var config   = require('../config.js')
-var sim      = require('../sim.js')
-var messages = require('../messages.js')
-var tools    = require('../tools.js')
+var config   = require('../config.js');
+var sim      = require('../sim.js');
+var messages = require('../messages.js');
+var tools    = require('../tools.js');
 
-var app = {}
-app.clientId = 0
-sim.config = config.server.defaultSimConfig
+var app = {};
+app.clientId = 0;
+sim.config = config.server.defaultSimConfig;
 
 // called by Net --------------------------------------------------------------------------
 
@@ -38,41 +38,41 @@ app.onMessage = function(c, parsed)
          */
         onWsMessage: function(c, parsed)
         {
-            sim.log('app', 'log', '⟵', parsed)
+            sim.log('app', 'log', '⟵', parsed);
 
             // your code here
         }
     }['on'+parsed.type+'Message'](c, parsed.payload)
-}
+};
 
 //-------------------------------------------------------------------------------------------
 
 app.networkInfo = function()
 {
-    var netInfo = {}
-    netInfo.nodes = {}
-    netInfo.nodesCount = function() { return Object.keys(netInfo.nodes).length }
+    var netInfo = {};
+    netInfo.nodes = {};
+    netInfo.nodesCount = function() { return Object.keys(netInfo.nodes).length };
     netInfo.nodes[0] = {
         clientcount: 0,
         dbLen: config.dbsize,
         simconfig: sim.config
-    }
+    };
 
     function updateCache(changedNodes)
     {
         function createNode()
         {
-            var newNode = {}
-            newNode.range = 'invalid'
-            newNode.simconfig = config.client.defaultSimConfig
+            var newNode = {};
+            newNode.range = 'invalid';
+            newNode.simconfig = config.client.defaultSimConfig;
             return newNode
         }
 
         function updateRanges()
         {
-            console.assert(network.connectionCount() === (netInfo.nodesCount() - 1))
+            console.assert(network.connectionCount() === (netInfo.nodesCount() - 1));
 
-            netInfo.nodes[0].clientcount = network.connectionCount()
+            netInfo.nodes[0].clientcount = network.connectionCount();
             netInfo.nodes.forEach(function (idx, cid, node)
             {
                 node.range = node.range ?
@@ -83,13 +83,13 @@ app.networkInfo = function()
 
         changedNodes.forEach(function(idx, id, v)
         {
-            if      (v === 'freshbeef') netInfo.nodes[id] = createNode()
-            else if (v === 'deadbeef')  delete netInfo.nodes[id]
+            if      (v === 'freshbeef') netInfo.nodes[id] = createNode();
+            else if (v === 'deadbeef')  delete netInfo.nodes[id];
             else                        netInfo.nodes[id] = v
         });
 
         if (changedNodes[app.clientId])
-            sim.config = changedNodes[app.clientId].simconfig
+            sim.config = changedNodes[app.clientId].simconfig;
 
         updateRanges();
         console.log(netInfo.nodes)
@@ -149,16 +149,16 @@ app.networkInfo = function()
 
 //-------------------------------------------------------------------------------------------
 
-var network = require('./network').network
-network.onConnectionChanged = app.onNetworkStateChange
-network.onMessage = app.onMessage
-network.sim = sim
+var network = require('./network').network;
+network.onConnectionChanged = app.onNetworkStateChange;
+network.onMessage = app.onMessage;
+network.sim = sim;
 
 //-------------------------------------------------------------------------------------------
 
-var connect = require('connect')
-var serveStatic = require('serve-static')
-connect().use(serveStatic('../')).listen(config.server.httpport)
+var connect = require('connect');
+var serveStatic = require('serve-static');
+connect().use(serveStatic('../')).listen(config.server.httpport);
 
 
 
