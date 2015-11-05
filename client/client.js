@@ -1,30 +1,30 @@
-var app = {}
-app.clientId = undefined
-app.wsUrl = 'ws://' + document.location.hostname + ':' + config.server.wsport
+var app = {};
+app.clientId = undefined;
+app.wsUrl = 'ws://' + document.location.hostname + ':' + config.server.wsport;
 app.setClientId = function(yourId)
 {
-    app.clientId = yourId
+    app.clientId = yourId;
     view.setConnectionInfo('Connected as client ' + 'C' + Number(app.clientId).toSubscript())
-}
+};
 
 
 // called by GUI --------------------------------------------------------------------------
 
 app.init = function()
 {
-    app.db.load()
-    view.loadAuthors()
-    view.insertTab()
-    view.networkInfo.onChanged = app.networkInfo.activeChange
-    network.onConnectionChanged = app.onNetworkStateChange
+    app.db.load();
+    view.loadAuthors();
+    view.insertTab();
+    view.networkInfo.onChanged = app.networkInfo.activeChange;
+    network.onConnectionChanged = app.onNetworkStateChange;
     network.connect(app.wsUrl)
-}
+};
 app.reloadAll = function()
 {
-    var msg = messages.reloadMsg()
-    var channelMsg = messages.channelMsg('Ws', msg)
+    var msg = messages.reloadMsg();
+    var channelMsg = messages.channelMsg('Ws', msg);
     network.connection.send(channelMsg)
-}
+};
 
 // called by Net --------------------------------------------------------------------------
 
@@ -44,13 +44,13 @@ app.onNetworkStateChange = function(state, connection)
 
         onDisconnected: function()
         {
-            view.setConnectionInfo('Auto reconnect')
-            view.db.setRange()
+            view.setConnectionInfo('Auto reconnect');
+            view.db.setRange();
             view.networkInfo.update('clear')
         }
 
     }['on'+state]()
-}
+};
 
 /**
  * @param c connection
@@ -66,31 +66,31 @@ app.onMessage = function(c, parsed)
     {
         onWsMessage: function(c, parsed)
         {
-            sim.log('app', 'log', '⟵', parsed)
+            sim.log('app', 'log', '⟵', parsed);
 
             // your code here
         }
     }['on'+parsed.type+'Message'](c, parsed.payload)
-}
+};
 
 //-----------------------------------------------------------------------------------------
 
 app.db = function()
 {
-    var db = { data:undefined, pageNr:0, fetch:0 }
-    db.begin = function() { return db.pageNr * config.dbsize }
+    var db = { data:undefined, pageNr:0, fetch:0 };
+    db.begin = function() { return db.pageNr * config.dbsize };
 
-    db.size    = function()    { return db.data.length }
-    db.getItem = function(mid) { return db.data[mid]   }
+    db.size    = function()    { return db.data.length };
+    db.getItem = function(mid) { return db.data[mid]   };
 
-    db.nextPage = function() { db.pageNr += 1; db.load() }
-    db.prevPage = function() { db.pageNr -= 1; db.load() }
+    db.nextPage = function() { db.pageNr += 1; db.load() };
+    db.prevPage = function() { db.pageNr -= 1; db.load() };
 
     db.load = function()
     {
-        db.data = []
-        view.db.clear()        
-        var dbprogress = view.db.addWorkerView('db' + db.fetch++)
+        db.data = [];
+        view.db.clear();
+        var dbprogress = view.db.addWorkerView('db' + db.fetch++);
 
         for (var i = 0; i < config.dbsize; i++)
         {
@@ -110,13 +110,13 @@ app.db = function()
                     view.db.removeWorkerView(dbprogress.id)
             };
 
-            db.data.push(item)
+            db.data.push(item);
             view.db.insertDbItem(item)
         }
     };
 
     return db
-}()
+}();
 
 //-----------------------------------------------------------------------------------------
 
