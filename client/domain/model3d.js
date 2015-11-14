@@ -24,11 +24,11 @@ function loadDbEntity(mid, realId)
     };
 
     //your code here
-    $.getJSON(featuresUrl, function (data){
+    $.getJSON(featuresUrl, function (data) {
         item.setFeatures(data.features);
     });
 
-    return item
+    return item;
 }
 /**
  * compareEntity is used for comparing a 3D object (feature vector) in the database with a 3D object that is searched
@@ -42,7 +42,17 @@ function loadDbEntity(mid, realId)
  */
 function compareEntity(dbEntity, param)
 {
-    // your code here
+    if (dbEntity.features.length != param.entity.features.length){return undefined;}
+    var sum = 0;
+    for (var i = 0; i < dbEntity.features.length; i++){
+        sum += Math.abs(dbEntity.features[i] - param.entity.features[i]);
+    }
+    var dist = sum / dbEntity.features.length;
+    if (dist < param.threshold){
+        return [dist, param.entity];
+    } else {
+        return undefined;
+    }
 }
 
 function entityView(dbItem)

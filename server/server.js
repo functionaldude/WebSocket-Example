@@ -20,7 +20,12 @@ sim.config = config.server.defaultSimConfig;
  */
 app.onNetworkStateChange = function(state, connection)
 {
-    // your code here
+    if (state === "Disconnected"){
+        delete network.connections[connection.id];
+    }
+    if (state === "Connected"){
+        network.connections[connection.id] = connection;
+    }
 };
 
 app.onMessage = function(c, parsed)
@@ -159,15 +164,3 @@ network.sim = sim;
 var connect = require('connect');
 var serveStatic = require('serve-static');
 connect().use(serveStatic('../')).listen(config.server.httpport);
-
-
-
-
-
-
-
-
-
-function greeting(){
-    println("happy birthday Karim!!!!");
-}

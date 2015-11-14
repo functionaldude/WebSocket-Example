@@ -12,14 +12,16 @@ network.connectionCount = function() { return Object.keys(network.connections).l
 /**
  * sendMulticast sends a multicast in the network
  *
- * @param array of connection ids, of clients to recieve the message
+ * @param receivers, array of connection ids, of clients to recieve the message
  * @param msg the message
  *
  * Student TODO (Task: Server Network): send message to all receivers
  */
 network.sendMulticast = function(receivers, msg)
 {
-    // your code here
+    receivers.forEach(function(id){
+        network.connections[id].send("multicast", msg);
+    })
 };
 
 /**
@@ -31,7 +33,7 @@ network.sendMulticast = function(receivers, msg)
  */
 network.sendBroadcast = function(msg)
 {
-    //your code here
+    network.sendMulticast(Object.keys(network.connections), msg);
 };
 
 network.wss = new WebSocketServer({ port:config.server.wsport });
@@ -52,7 +54,44 @@ network.wss.on('error', function(err) { console.error('WebSocketServer error: ' 
  */
 network.wss.on('connection', function (ws)
 {
-    //your code here
+    console.log('client connected');
+
+    var connId = network.nextFreeConnectionId++;
+
+    var connObj = {
+        "id" : connId,
+        close : function(){
+            ws.close();
+            console.log('client '+connId+' disconnected');
+        },
+        send : function(type, msg){
+            var netMsg = {
+                "type" : type,
+                "msg" : msg
+            };
+            ws.send(JSON.stringify(netMsg));
+        }
+    };
+
+    connObj.send("event", {"event":"connectionChanged", "state":"connected"});
+    network.sendBroadcast({"event":"newclient","id":connId});
+
+    ws.on('close', function (){
+        network.onConnectionChanged("Disconnected", connObj);
+    });
+
+    ws.on('error', function (){
+        network.onConnectionChanged("Disconnected", connObj);
+    });
+
+    ws.on('message', function(msg){
+        console.log('Msg received from client '+connObj.id);
+        network.onMessage(connObj, JSON.parse(msg));
+    });
+
+    network.onConnectionChanged("Connected", connObj);
+
+
 });
 
 exports.network = network;

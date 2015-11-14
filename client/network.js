@@ -23,8 +23,42 @@ network.connection.close = function() { /* nothing to do */ };
 network.connect = function(url)
 {
     try
-    {        
-        //your code here
+    {
+        network.onConnectionChanged("Connecting", network.connection);
+
+        var connection = new WebSocket(url);
+
+        connection.onopen = function() {
+            //connection.send('Ping');
+        };
+
+        connection.onerror = function (error) {
+            console.log('WebSocket Error ' + error);
+        };
+
+        // Log messages from the server
+        connection.onmessage = function (e) {
+            var data = JSON.parse(e.data);
+            if (data.type === "event"){
+                console.log('event received');
+                if (data.msg.event === "connectionChanged"){
+                    console.log('connection changed: '+data.msg.state);
+                    if (data.msg.state === "connected"){
+                        network.onConnectionChanged("Connected", network.connection);
+                    }
+                }
+            }
+        };
+
+        connection.onclose = function (e) {
+            console.log('Server closed connection');
+            setTimeout(function(){
+                network.connect(url);
+            }, config.client.reconnectIntervall);
+        };
+        network.connection.send = function(msg){
+            connection.send(JSON.stringify(msg));
+        }
     }
     catch(e)
     {
