@@ -20,7 +20,7 @@ network.connectionCount = function() { return Object.keys(network.connections).l
 network.sendMulticast = function(receivers, msg)
 {
     receivers.forEach(function(id){
-        network.connections[id].send("multicast", msg);
+        network.connections[id].send(msg.type, msg.data);
     })
 };
 
@@ -72,9 +72,6 @@ network.wss.on('connection', function (ws)
             ws.send(JSON.stringify(netMsg));
         }
     };
-
-    connObj.send("event", {"event":"connectionChanged", "state":"connected"});
-    network.sendBroadcast({"event":"newclient","id":connId});
 
     ws.on('close', function (){
         network.onConnectionChanged("Disconnected", connObj);

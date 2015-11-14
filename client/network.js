@@ -29,7 +29,7 @@ network.connect = function(url)
         var connection = new WebSocket(url);
 
         connection.onopen = function() {
-            //connection.send('Ping');
+            network.onConnectionChanged("Connected", network.connection);
         };
 
         connection.onerror = function (error) {
@@ -38,16 +38,8 @@ network.connect = function(url)
 
         // Log messages from the server
         connection.onmessage = function (e) {
-            var data = JSON.parse(e.data);
-            if (data.type === "event"){
-                console.log('event received');
-                if (data.msg.event === "connectionChanged"){
-                    console.log('connection changed: '+data.msg.state);
-                    if (data.msg.state === "connected"){
-                        network.onConnectionChanged("Connected", network.connection);
-                    }
-                }
-            }
+            console.log(e.data);
+            app.onMessage(network.connection, JSON.parse(e.data));
         };
 
         connection.onclose = function (e) {

@@ -23,10 +23,11 @@ function loadDbEntity(mid, realId)
         features: undefined
     };
 
-    //your code here
-    $.getJSON(featuresUrl, function (data) {
+    var callback = function(data){
         item.setFeatures(data.features);
-    });
+    };
+
+    $.getJSON(featuresUrl, callback);
 
     return item;
 }
@@ -35,7 +36,7 @@ function loadDbEntity(mid, realId)
  *
  * @param dbEntity database object
  * @param param search parameters (item to compare as: ‘param.entity’ and threshold as:  ‘param.threshold’)
- * @returns undefined if the distance is not within the threshold, otherwise touple containing distance and compared * item
+ * @returns undefined if the distance is not within the threshold, otherwise tuple containing distance and compared item
  *
  * Student TODO (Task: Feature distance): check if the database object is SIMILAR ENOUGH to the object given as a
  *              parameter by calculating the Euclidean distance between the feature vectors.

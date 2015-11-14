@@ -41,11 +41,20 @@ app.onMessage = function(c, parsed)
          * Student TODO (Task: Dispatching messages in server): handle the 2 cases: change the network info
          *              or notify accordingly
          */
-        onWsMessage: function(c, parsed)
-        {
+        onWsMessage: function(c, parsed){
             sim.log('app', 'log', '⟵', parsed);
 
-            // your code here
+            if (parsed.type === 'Reload'){
+                console.log('reload msg2');
+                network.sendBroadcast({
+                    type:'Reload',
+                    data:''
+                });
+            }
+
+            if (parsed.type === 'NetworkInfo'){
+                console.log('network info msg');
+            }
         }
     }['on'+parsed.type+'Message'](c, parsed.payload)
 };
@@ -141,8 +150,7 @@ app.networkInfo = function()
      * Student TODO (Task: app.NetworkInfo in server): Send a multi-cast message containing the parsed list
      *              to all connected clients (except the sender).
      */
-    netInfo.passiveChange = function(c, parsed)
-    {
+    netInfo.passiveChange = function(c, parsed){
         sim.log('app', 'log', '⟵', 'node content changed by node ' + c.id);
 
         updateCache(parsed.nodes);
