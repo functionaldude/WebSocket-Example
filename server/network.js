@@ -69,8 +69,7 @@ network.wss.on('connection', function (ws)
         }
     };
 
-    var msg = messages.channelMsg('Ws',messages.clientIdMsg(connId));
-    connObj.send(msg);
+    network.onConnectionChanged("Connected", connObj);
 
     ws.on('close', function (){
         network.onConnectionChanged("Disconnected", connObj);
@@ -85,7 +84,6 @@ network.wss.on('connection', function (ws)
         network.onMessage(connObj, JSON.parse(msg));
     });
 
-    network.onConnectionChanged("Connected", connObj);
 
 });
 

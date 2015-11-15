@@ -22,9 +22,14 @@ app.onNetworkStateChange = function(state, connection)
 {
     if (state === "Disconnected"){
         delete network.connections[connection.id];
+        app.networkInfo.removeNode(connection);
     }
     if (state === "Connected"){
         network.connections[connection.id] = connection;
+
+        connection.send(messages.channelMsg('Ws', messages.clientIdMsg(connection.id)));
+
+        app.networkInfo.addNode(connection);
     }
 };
 
@@ -51,7 +56,7 @@ app.onMessage = function(c, parsed)
                 network.sendBroadcast(msg);
             }
             if (parsed.type === 'NetworkInfo'){
-                console.log('network info msg');
+                app.networkInfo.passiveChange(c, parsed);
             }
         }
     }['on'+parsed.type+'Message'](c, parsed.payload)
@@ -104,7 +109,7 @@ app.networkInfo = function()
             sim.config = changedNodes[app.clientId].simconfig;
 
         updateRanges();
-        console.log(netInfo.nodes)
+        //console.log(netInfo.nodes)
     }
 
     /**
@@ -121,7 +126,8 @@ app.networkInfo = function()
         nodes[changedConnection.id] = 'freshbeef';
         updateCache(nodes);
 
-        // your code here
+        var msg = messages.channelMsg('Ws', messages.networkInfoMsg(netInfo.nodes));
+        network.sendBroadcast(msg);
     };
 
     /**
@@ -138,7 +144,9 @@ app.networkInfo = function()
         nodes[changedConnection.id] = 'deadbeef';
         updateCache(nodes);
 
-        // your code here
+        var msg = messages.channelMsg('Ws', messages.networkInfoMsg(nodes));
+        network.sendBroadcast(msg);
+
     };
 
     /**
@@ -149,11 +157,13 @@ app.networkInfo = function()
      *              to all connected clients (except the sender).
      */
     netInfo.passiveChange = function(c, parsed){
-        sim.log('app', 'log', '⟵', 'node content changed by node ' + c.id);
+        //sim.log('app', 'log', '⟵', 'node content changed by node ' + c.id);
 
         updateCache(parsed.nodes);
 
-        // your code here
+        var msg = messages.channelMsg('Ws', messages.networkInfoMsg(parsed.nodes));
+        var receivers = Object.keys(network.connections).without([c.id.toString()]);
+        network.sendMulticast(receivers, msg);
     };
     return netInfo
 }();

@@ -76,7 +76,7 @@ app.onMessage = function(c, parsed)
                 app.setClientId(parsed.yourId);
             }
             if (parsed.type === 'NetworkInfo'){
-
+                app.networkInfo.passiveChange(c, parsed);
             }
         }
     }['on'+parsed.type+'Message'](c, parsed.payload)
@@ -144,7 +144,7 @@ app.networkInfo = function()
     {
         sim.log('app', 'log', '⟶', nodes);
 
-        // your code here
+        network.connection.send(messages.channelMsg('Ws', messages.networkInfoMsg(nodes)))
     };
 
     /**
@@ -157,7 +157,11 @@ app.networkInfo = function()
      */
     netInfo.passiveChange = function(c, parsed)
     {
-        // your code here
+        view.networkInfo.update(parsed);
+        if (app.clientId in parsed.nodes){
+            sim.config = parsed.nodes[app.clientId].simconfig;
+            console.log(sim);
+        }
     };
     return netInfo
 }();
