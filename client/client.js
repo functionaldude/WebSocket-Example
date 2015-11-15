@@ -81,7 +81,7 @@ app.onMessage = function(c, parsed)
         onNetworkInfo: function(c, parsed){
             console.log('network msg');
         }
-    }['on'+parsed.type+'Message'](c, parsed.payload)
+    }['on'+parsed.type+'Message'](c, parsed.msg)
 };
 
 //-----------------------------------------------------------------------------------------

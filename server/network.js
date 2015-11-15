@@ -73,6 +73,8 @@ network.wss.on('connection', function (ws)
         }
     };
 
+    connObj.send('ClientId', {yourId:connId});
+
     ws.on('close', function (){
         network.onConnectionChanged("Disconnected", connObj);
     });
