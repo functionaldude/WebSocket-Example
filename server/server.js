@@ -30,6 +30,7 @@ app.onNetworkStateChange = function(state, connection)
 
 app.onMessage = function(c, parsed)
 {
+    console.log(parsed);
     var channelHandlers =
     {
         /**
@@ -43,19 +44,17 @@ app.onMessage = function(c, parsed)
          */
         onWsMessage: function(c, parsed){
             sim.log('app', 'log', '⟵', parsed);
-        },
-        onReloadMessage: function(c, parsed){
-            console.log('reload msg2');
-            network.sendBroadcast({
-                type:'Reload',
-                data:''
-            });
-        },
-        onNetworkInfoMessage(c, parsed){
-            console.log('network info msg');
-        }
 
-    }['on'+parsed.payload.type+'Message'](c, parsed.payload)
+            if (parsed.type === 'Reload'){
+                console.log('reload msg2');
+                var msg = messages.channelMsg('Ws', messages.reloadMsg());
+                network.sendBroadcast(msg);
+            }
+            if (parsed.type === 'NetworkInfo'){
+                console.log('network info msg');
+            }
+        }
+    }['on'+parsed.type+'Message'](c, parsed.payload)
 };
 
 //-------------------------------------------------------------------------------------------

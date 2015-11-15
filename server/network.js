@@ -20,7 +20,7 @@ network.connectionCount = function() { return Object.keys(network.connections).l
 network.sendMulticast = function(receivers, msg)
 {
     receivers.forEach(function(id){
-        network.connections[id].send(msg.type, msg.data);
+        network.connections[id].send(msg);
     })
 };
 
@@ -64,16 +64,13 @@ network.wss.on('connection', function (ws)
             ws.close();
             console.log('client '+connId+' disconnected');
         },
-        send : function(type, msg){
-            var netMsg = {
-                "type" : type,
-                "msg" : msg
-            };
-            ws.send(JSON.stringify(netMsg));
+        send : function(msg){
+            ws.send(JSON.stringify(msg));
         }
     };
 
-    connObj.send('ClientId', {yourId:connId});
+    var msg = messages.channelMsg('Ws',messages.clientIdMsg(connId));
+    connObj.send(msg);
 
     ws.on('close', function (){
         network.onConnectionChanged("Disconnected", connObj);
@@ -89,7 +86,6 @@ network.wss.on('connection', function (ws)
     });
 
     network.onConnectionChanged("Connected", connObj);
-
 
 });
 

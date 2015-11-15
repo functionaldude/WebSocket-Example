@@ -38,7 +38,6 @@ network.connect = function(url)
 
         // Log messages from the server
         connection.onmessage = function (e) {
-            console.log(e.data);
             app.onMessage(network.connection, JSON.parse(e.data));
         };
 

@@ -62,26 +62,24 @@ app.onNetworkStateChange = function(state, connection)
  */
 app.onMessage = function(c, parsed)
 {
-    console.log(parsed);
     var channelHandlers =
     {
         onWsMessage: function(c, parsed)
         {
             sim.log('app', 'log', '⟵', parsed);
-        },
-        onReloadMessage: function(c, parsed){
-            console.log('reload msg');
-            location.reload();
-        },
-        onClientIdMessage: function(c, parsed){
-            console.log('clientid msg');
-            c.id = parsed.yourId;
-            app.setClientId(parsed.yourId);
-        },
-        onNetworkInfo: function(c, parsed){
-            console.log('network msg');
+
+            if (parsed.type === 'Reload'){
+                location.reload();
+            }
+            if (parsed.type === 'ClientId'){
+                c.id = parsed.yourId;
+                app.setClientId(parsed.yourId);
+            }
+            if (parsed.type === 'NetworkInfo'){
+
+            }
         }
-    }['on'+parsed.type+'Message'](c, parsed.msg)
+    }['on'+parsed.type+'Message'](c, parsed.payload)
 };
 
 //-----------------------------------------------------------------------------------------
