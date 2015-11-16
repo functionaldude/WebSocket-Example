@@ -144,6 +144,8 @@ app.networkInfo = function()
     {
         sim.log('app', 'log', '⟶', nodes);
 
+        sim.config = nodes[app.clientId].simconfig;
+
         network.connection.send(messages.channelMsg('Ws', messages.networkInfoMsg(nodes)))
     };
 
@@ -160,7 +162,7 @@ app.networkInfo = function()
         view.networkInfo.update(parsed);
         if (app.clientId in parsed.nodes){
             sim.config = parsed.nodes[app.clientId].simconfig;
-            console.log(sim);
+            view.db.setRange(parsed.nodes[app.clientId].range);
         }
     };
     return netInfo
