@@ -147,6 +147,9 @@ app.networkInfo = function()
         var msg = messages.channelMsg('Ws', messages.networkInfoMsg(nodes));
         network.sendBroadcast(msg);
 
+        msg = messages.channelMsg('Ws', messages.networkInfoMsg(netInfo.nodes));
+        network.sendBroadcast(msg);
+
     };
 
     /**
