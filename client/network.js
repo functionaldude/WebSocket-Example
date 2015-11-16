@@ -24,12 +24,12 @@ network.connect = function(url)
 {
     try
     {
-        network.onConnectionChanged("Connecting", network.connection);
+        network.onConnectionChanged('Connecting', network.connection);
 
         var connection = new WebSocket(url);
 
         connection.onopen = function() {
-            network.onConnectionChanged("Connected", network.connection);
+            network.onConnectionChanged('Connected', network.connection);
         };
 
         connection.onerror = function (error) {
@@ -42,7 +42,7 @@ network.connect = function(url)
         };
 
         connection.onclose = function (e) {
-            console.log('Server closed connection');
+            network.onConnectionChanged('Disconnected', network.connection);
             setTimeout(function(){
                 network.connect(url);
             }, config.client.reconnectIntervall);
