@@ -23,11 +23,9 @@ function loadDbEntity(mid, realId)
         features: undefined
     };
 
-    var callback = function(data){
+    $.getJSON(featuresUrl, function(data){
         item.setFeatures(data.features);
-    };
-
-    $.getJSON(featuresUrl, callback);
+    });
 
     return item;
 }

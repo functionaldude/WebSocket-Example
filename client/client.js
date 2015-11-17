@@ -144,7 +144,9 @@ app.networkInfo = function()
     {
         sim.log('app', 'log', '⟶', nodes);
 
-        sim.config = nodes[app.clientId].simconfig;
+        if (app.clientId in nodes){
+            sim.config = nodes[app.clientId].simconfig;
+        }
 
         network.connection.send(messages.channelMsg('Ws', messages.networkInfoMsg(nodes)))
     };

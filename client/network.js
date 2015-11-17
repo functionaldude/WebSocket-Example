@@ -30,6 +30,9 @@ network.connect = function(url)
 
         connection.onopen = function() {
             network.onConnectionChanged('Connected', network.connection);
+            network.connection.send = function(msg){
+                connection.send(JSON.stringify(msg));
+            }
         };
 
         connection.onerror = function (error) {
@@ -47,9 +50,7 @@ network.connect = function(url)
                 network.connect(url);
             }, config.client.reconnectIntervall);
         };
-        network.connection.send = function(msg){
-            connection.send(JSON.stringify(msg));
-        }
+
     }
     catch(e)
     {
