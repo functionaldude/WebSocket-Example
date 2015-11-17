@@ -44,9 +44,9 @@ function compareEntity(dbEntity, param)
     if (dbEntity.features.length != param.entity.features.length){return undefined;}
     var sum = 0;
     for (var i = 0; i < dbEntity.features.length; i++){
-        sum += Math.abs(dbEntity.features[i] - param.entity.features[i]);
+        sum += Math.pow((dbEntity.features[i] - param.entity.features[i]),2);
     }
-    var dist = sum / dbEntity.features.length;
+    var dist = Math.sqrt(sum);
     if (dist < param.threshold){
         return [dist, param.entity];
     } else {
