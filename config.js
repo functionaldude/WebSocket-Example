@@ -4,13 +4,13 @@
     exports.authors = []
     exports.authors[0] = {}
     //Student TODO: Enter team members' names and matricular numbers.
-    exports.authors[0].matNr     = '0123456'
-    exports.authors[0].firstName = 'First name'
-    exports.authors[0].lastName  = 'Last name'
+    exports.authors[0].matNr     = '1330435'
+    exports.authors[0].firstName = 'Zoltan'
+    exports.authors[0].lastName  = 'Szasvari'
     exports.authors[1] = {}
-    exports.authors[1].matNr     = ''
-    exports.authors[1].firstName = 'config.js must contain'
-    exports.authors[1].lastName  = ''
+    exports.authors[1].matNr     = '1331335'
+    exports.authors[1].firstName = 'Andreas'
+    exports.authors[1].lastName  = 'Wöls'
     exports.authors[2] = {}
     exports.authors[2].matNr     = ''
     exports.authors[2].firstName = ''
