@@ -80,7 +80,6 @@ network.wss.on('connection', function (ws)
     });
 
     ws.on('message', function(msg){
-        console.log('Msg received from client '+connObj.id);
         network.onMessage(connObj, JSON.parse(msg));
     });
 
