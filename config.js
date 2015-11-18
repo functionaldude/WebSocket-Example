@@ -12,9 +12,9 @@
     exports.authors[1].firstName = 'Andreas'
     exports.authors[1].lastName  = 'Wöls'
     exports.authors[2] = {}
-    exports.authors[2].matNr     = ''
-    exports.authors[2].firstName = ''
-    exports.authors[2].lastName  = 'matNr, firstname and lastname'
+    exports.authors[2].matNr     = '1331106'
+    exports.authors[2].firstName = 'Alexander'
+    exports.authors[2].lastName  = 'Grass'
     exports.server = {}
     exports.server.wsport          = 1336
     exports.server.httpport        = 1337
