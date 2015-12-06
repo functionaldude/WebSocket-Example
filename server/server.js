@@ -21,14 +21,10 @@ sim.config = config.server.defaultSimConfig;
 app.onNetworkStateChange = function(state, connection)
 {
     if (state === "Disconnected"){
-        delete network.connections[connection.id];
         app.networkInfo.removeNode(connection);
     }
     if (state === "Connected"){
-        network.connections[connection.id] = connection;
-
         connection.send(messages.channelMsg('Ws', messages.clientIdMsg(connection.id)));
-
         app.networkInfo.addNode(connection);
     }
 };

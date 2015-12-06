@@ -29,6 +29,7 @@ network.connect = function(url)
         var connection = new WebSocket(url);
 
         connection.onopen = function() {
+            network.connections[connection.id] = connection;
             network.onConnectionChanged('Connected', network.connection);
             network.connection.send = function(msg){
                 connection.send(JSON.stringify(msg));
@@ -36,6 +37,7 @@ network.connect = function(url)
         };
 
         connection.onerror = function (error) {
+            delete network.connections[connection.id];
             console.log('WebSocket Error ' + error);
         };
 
@@ -45,6 +47,7 @@ network.connect = function(url)
         };
 
         connection.onclose = function (e) {
+            delete network.connections[connection.id];
             network.onConnectionChanged('Disconnected', network.connection);
             setTimeout(function(){
                 network.connect(url);
