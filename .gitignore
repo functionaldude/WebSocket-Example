@@ -6,8 +6,5 @@
 *vpp~*
 .directory
 .idea
-<<<<<<< HEAD
 *.iml
-=======
-db/
->>>>>>> cc1724226b84258538eebad033093824f9dfb546
+
