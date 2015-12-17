@@ -1,0 +1,6 @@
+# Example CI config
+
+job1:
+  script:
+    - ls
+    - sleep 15s

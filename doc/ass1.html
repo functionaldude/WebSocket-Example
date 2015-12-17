@@ -1,0 +1,557 @@
+<html>
+    <head>
+        <link href="doc.css" rel="stylesheet" type="text/css">
+    </head>
+    <body id="body" onload="app.init()">
+        <div id="header">
+            <div id="connection">SVU 2015 Documentation</div>
+            <a target="_blank" href="../client/view.html">app</a> &#x2022;
+            <a target="_blank" href="../doc/ass2.html">&#x279f; ass2</a> &#x2022;
+            <a target="_blank" href="../doc/org.html">&#x279f; org</a>
+        </div>
+
+        <div class="column">
+            <div class="paper">
+                <div class="pheader"><div class="tab-active">&#x1f446;</div></div>
+                <div class="content">
+                    <h1>1. Overview</h1>
+                    <div class="line"></div>
+                    <p>
+
+                    We propose a client-server application for performing a distributed search of 3D objects.
+                    The first task is a preparation for the actual seach and its main goal is transmitting data in the network
+                    and synchronizing the clients. Each client has a configuration that lets the user enable different log levels,
+                    error simulations and search delays for every client.
+                    Each client can see the configuration of all clients in its view(GUI) as seen in Figure 1.
+                    This configuration will have to be synchronized.
+                    We are going
+                    to call such a configuration associated with a client or with the server Node and the associated object in the code NetworkInfo.
+                    </p>
+
+                    <figure>
+                    <a href="img/GUIRegions.png" style="float;left"><img src="img/GUIRegions.png" class="imgcenter"></a>
+                    <figcaption class="captionleft">Fig. 1 GUI screencapture emphasizing the client configs</figcaption>
+                    </figure>
+
+                    <h2>1.1. Deployment</h2>
+
+                    <figure>
+                    <a href="img/Deployment.png" style="float;left"><img src="img/Deployment.png" class="imgcenter"></a>
+                    <figcaption class="captionleft">Fig. 2 Deployment diagram</figcaption>
+                    </figure>
+
+                    <p>
+                    The main componets of the proposed system are the server and the client.
+                    The client is a thin client: the Chrome browser, running the client side
+                    software components. The server side application runs in the nodejs
+                    runtime environment and consists of the Http Server and WebSocket Server
+                    software components.
+                    Therefore the server communicates via:
+                    <ul>
+                    <li>a http port: for GUI, loading 3D Objects
+                    data from database</li>
+                    <li>a websocket port: for synchronisation of network information
+                    and for the actual search</li>
+                    </ul>
+                    In the context of this exercise, the distributed search clients are also workers.
+                    </p>
+                    <div class="line"></div>
+
+
+                    <h2>1.2. Architecture</h2>
+                    <p>
+                    <figure>
+                    <a href="img/Layers.png" style="float;left"><img src="img/Layers.png" class="imgleft"></a>
+                    <figcaption class="captionleft">Fig. 3 Layered View (Network structure)</figcaption>
+                    </figure>
+                    As seen in Figure 3:
+                    <dl>
+                    <dt>Server layers:</dt>
+                        <dd>- network layer</dd>
+                        <dd>- application layer</dd>
+                    <dt>Client layers:</dt>
+                        <dd>- network layer</dd>
+                        <dd>- application layer</dd>
+                        <dd>- view layer</dd>
+                    </dl>
+                    The 3D objects database itself is just an array that has to be loaded with AJAX. For the
+                    purpose of the exercise no real DBMS is used. Only the client accesses the
+                    database, as the server is only responsible for delegating the search further to
+                    workers (clients).
+                    </p>
+
+                    <p>
+
+                    The view is already implemented for you.
+                    When view is loaded (in the client), it calls the <i>app.init()</i> function. This calls <i>network.connect</i>,
+                    which connects the client to the websocket that the server is listening to.
+
+
+
+                    When a Networkinfo is changed in view, app gets an event. In section 5, we describe
+                    what should happen next and it is also part of the student tasks.
+
+                    <figure>
+                    <a href="img/Flow.png" style="float;right"><img src="img/Flow.png" class="imgright"></a>
+                    <figcaption class="captionleft">Fig. 4 Typical data flow</figcaption>
+                    </figure>
+                    </p>
+                    <p>
+                    Figure 4 shows a typical data flow:
+                    <br>
+                    <i>client.view &#8594; client.app &#8594; client.net &#8594; websocket (as JSON) &#8594; server.net
+                    &#8594; server.app &#8594; (websocket(as JSON) &#8594; client.net &#8594; client.app &#8594;
+                    client.view)*</i>
+                    </p>
+
+                    <p>
+                    The student TODOs are going to cover parts of:
+                    <ul>
+                    <li> network
+                    <li> app
+                    <li> loading of database objects
+                    </ul>
+                    </p>
+
+
+                    <p>
+                    <div class="line"></div>
+                    * to any number of clients
+                    </p>
+
+                </div>
+            </div>
+
+
+
+            <div class="paper">
+                <div class="pheader"><div class="tab-active">&#x1f446;</div></div>
+                <div class="content">
+                    <h1>2. Warm-up Exercises</h1>
+                    <div class="line"></div>
+                    <p>
+                    This part serves as an introduction to javascript. The 2 subtasks
+                    are independent from the rest.
+
+                    </p>
+                    <div class="line"></div>
+
+                    <h2>Task: Ajax request</h2>
+                    <p>
+
+                    The database item is already given. It has a tumbnail url and
+                    a feature vector url. The thumbnails is used just for visualisation purposes in the GUI
+                    while the feature vector is the way we represent a 3D object.
+                    </p>
+                    <p>
+                    Because of the potentially big
+                    size of the database that has to be loaded by the client, loading the objects synchronously (always waiting for the previous object to be finished)
+                    could take a long time. Loading the objects asynchronously however does not imply waiting for a response before sending
+                    the next request. The objects are loaded as the responses are received. This means that even if some
+                    objects need a longer time to load, other objects can be loaded in the meanwhile.
+                    </p>
+                    <p>
+                    The feature vector has to be loaded asynchronously.
+                    This has to be implemented with <a href="https://en.wikipedia.org/wiki/XMLHttpRequest">XMLHttpRequest</a>
+                    or <a href="http://api.jquery.com/jquery.getjson/">jQuery.getJSON</a>.
+                    When data arrives use <i>dbitem.setFeature(...)</i> to set the feature
+                    vector and <i>dbitem.setFeature(undefined)</i> in case an error occurs.
+
+                    </p>
+
+                    <p>
+                    The code TODO is to be found in <i>client/domain/model3d.js:loadDbEntity</i>.
+                    </p>
+
+                    <div class="line"></div>
+
+
+
+                    <h2>Task: Feature distance</h2>
+                    <p>
+                    Calculate the <a href="https://en.wikipedia.org/wiki/Euclidean_distance">Euclidean distance</a> between
+                    the feature vectors of two 3D objects and return a <i>match</i> object if the distance is smaller than
+                    the treshold. Else return undefined.
+                    </p>
+
+                    <p>
+                    The code TODO is to be found in <i>client/domain/model3d.js:compareEntity</i>.
+                    </p>
+
+                    <p>
+                    Tip1: the goal of this subtask, besides the functionality, of course,
+                     is to take a look at the javascript
+                    <a href="http://www.w3schools.com/jsref/jsref_obj_array.asp">Array Methods</a>
+                    and to learn to use them.
+                    </p>
+                    <p>
+                    Tip2: This can be done in three lines of code.
+                    </p>
+                </div>
+            </div>
+
+            <div class="paper">
+                <div class="pheader"><div class="tab-active">&#x1f446;</div></div>
+                <div class="content">
+                    <h1>3. Network Exercises</h1>
+                    <div class="line"></div>
+
+                    <h1>Network Overview</h1>
+
+                    The server network top interface consists of:
+                    <ul>
+                        <li>method: <i>network.connections[x].send(msg)</i> sends message <i>msg</i> over connection with ID x.
+                        <li>method: <i>network.sendBroadcast(msg)</i> sends message <i>msg</i> to all connections.
+                        <li>method: <i>network.sendMulticast(receivers, msg)</i> sends message <i>msg</i> to a list of
+                        receivers (array of connection IDs).
+                        <li>event: <i>network.onMessage(connection, parsed)</i> is called when an incoming message is received. Connection is the
+                        connection object (containing the connection ID), parsed is the parsed message.
+                        <li>event: <i>network.onConnectionChanged(state, connection)</i> is called when a connection is accepted or ended
+                        (state can be 'Connected' or 'Disconnected).
+                    </ul>
+
+                    The client network top interface consists of:
+                    <ul>
+                        <li>method: <i>network.connect(url)</i> opens a websocket conntection to the given url.
+                        <li>method: <i>network.connection.send(msg)</i> sends message <i>msg</i> over the connection to the server
+                        <li>method: <i>network.connection.close()</i> closes the connection.
+                        <li>event: <i>network.onConnectionChanged(state, connection)</i> is called when a connection is initiated, opened or ended.
+                        (state can be 'Connecting', 'Connected' or 'Disconnected)
+                    </ul>
+
+
+                    <p>
+                    In order to understand these methods and events better, we describe as an example
+                    what happens when a log level is enabled by a client.
+
+                    <!--<figure>
+                    <a href="img/Overview.png"><img src="img/Overview.png" class="imgright"></a>
+                    <figcaption class="captionleft">Fig. 5 System class diagram</figcaption>
+                    </figure>
+                    -->
+
+                    We assume the following scenario: 3 clients are connected: c1, c2, c3.
+                    c1 changes the log level of the server.
+                    </p>
+
+                    <p>
+                    <i>c1.view</i> calls <i>c1.networkinfo.activeChange</i>. This uses the network to send the
+                    message to the server. The server gets the message and its network (server.network) triggers an <i>onMessage</i>
+                    event. <i>server.app</i> 'recognizes' the NetworkInfo message and dispatches it to <i>app.networkInfo.passiveChange</i>.
+
+                    <i>app.networkInfo.passiveChange</i> updates the server's cache and sends a multicast to all clients except to the
+                    sender. The message reception in the clients happens in a similar way to what happened in the server, the
+                    difference being that <i>client.networkInfo.passivechange</i> updates the client cache and the client gui (for each client).
+                    </p>
+
+                    <p>
+                    We can see that <i>client.networkInfo.activeChange</i> is responsible for the change in the networkInfo of the client
+                    that got an event directly from its view (event in browser) while <i>client.networkInfo.activeChange</i> handles the
+                    changes that other clients triggered.
+                    </p>
+
+
+
+
+
+                    <h2>Task: Client Network</h2>
+                    <p></p>
+                    <figure>
+                    <a href="cutimg/ClientNetwork.png"><img src="cutimg/ClientNetwork.png" class="imgcenter"></a>
+                    <figcaption class="captionleft">Fig. 5 Client Network overview</figcaption>
+                    </figure>
+
+                    <p>
+                    The client network task concerns the implementation of the client side network with the 3 important
+                     <a href="http://www.html5rocks.com/en/tutorials/websockets/basics/">WebSocket</a> events:
+                     onopen, onmessage, onclose.
+                     The Websocket actively creates the connection, as the server waits for incoming connections.
+                     </p>
+                     <p>
+                         The client side network functionality includes:
+                    <ul>
+                        <li> opening a new connection (to the server)
+                        <li> listening for other incoming messages and reporting them to the app
+                        <li> trying to reestablish the connection on connection close
+                    </ul>
+
+                     </p>
+                     <p>
+                         The code TODO is to be found in <i>client/network.js</i>.
+                     </p>
+
+                    <div class="line"></div>
+
+
+
+                    <h2>Task: Server Network</h2>
+                    <p></p>
+                    <figure>
+                    <a href="cutimg/ServerNetwork.png"><img src="cutimg/ServerNetwork.png" class="imgcenter"></a>
+                    <figcaption class="captionleft">Fig. 6 Server Network overview</figcaption>
+                    </figure>
+
+
+
+                    <p>
+                    In the server the <a href="https://www.npmjs.com/package/ws">WebSocketServer</a> is used.
+                    The server network task concerns the implementation of the server side network functionality:
+                    <ul>
+                        <li> sending a multicast message
+                        <li> sending a broadcast message
+                        <li> listening and accepting new connections
+                        <li> listening for other incoming messages and reporting them to the app
+                        <li> reporting new connections on connection close
+                    </ul>
+                    </p>
+                    <p>
+                        The code TODO is to be found in <i>server/network.js</i>.
+                    </p>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="column">
+            <div class="paper">
+                <div class="pheader"><div class="tab-active">&#x1f446;</div></div>
+                <div class="content">
+                    <h1>4. Dispatching Messages</h1>
+                    <div class="line"></div>
+
+                    <p>
+                    This task deals with the client and server behaviour when they get a message.
+                    The following functions have to be implemented:
+                    </p>
+
+
+
+
+                    <h2>Task: Dispatching messages in client</h2>
+                    <p>
+                    <ul>
+                        <li>onReload</li>
+                        <li>onClientId</li>
+                        <li>onNetworkInfo</li>
+                    </ul>
+                    </p>
+                    <p>
+                    The code TODO is to be found in <i>client/client.js:app.onMessage</i>.
+                    </p>
+                    <div class="line"></div>
+
+
+                    <h2>Task: Dispatching messages in server</h2>
+                    <p>
+                    <ul>
+                        <li>onReload</li>
+                        <li>onNetworkInfo</li>
+                    </ul>
+                    </p>
+
+                    <p>
+                    The code TODO is to be found in <i>server/server.js:app.onMessage</i>.
+                    </p>
+                    <div class="line"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="column">
+            <div class="paper">
+                <div class="pheader"><div class="tab-active">&#x1f446;</div></div>
+                <div class="content">
+                    <h1>5. Data Synchronisation</h1>
+                    <div class="line"></div>
+
+                    <p>
+                    The exercise referes to synchronising Node objects. In this context
+                    the Node objects contain configuration information valuable for the clients like enabling/disabling
+                    output, search speed, crash behavoiur and other. Each client has an assiociated
+                    Node visible by each of the other clients. Each client can modify the configuration of the other clients. In order
+                    for the configurations to be set correctly and to be up to date, data synchronisation is necessary.
+                    </p>
+                    <p>
+                    When refering to the implementation, synchronisation is needed in 3 places: when a client connects, when a
+                    client disconnects, when the GUI is changed by someone (when some client modifies someone's configuration from the GUI).
+                    A network info message is used to communicate such configuration changes.
+                    </p>
+
+                    <figure>
+                    <a href="img/Node.png"><img src="img/Node.png" class="imgleft"></a>
+                    <figcaption class="captionleft">Fig. 7 Node Object Class Diagram</figcaption>
+                    </figure>
+
+                    <p>
+                        The datablock to be synchronized is saved in the server in a map with client ids as keys and client configs (nodes) as values.
+                        A <i>networkInfoMsg</i> contains this data as JSON Dict.
+                        One can see in Figure 7 that a server node is different from a client node.
+                    </p>
+
+                    <p>
+                        When a client gets a networkInfoMsg it has to update its cache and its GUI accordingly.
+                        When a Node is not present in the message then it means there are no changes to be done
+                        about this node. If a node is 'deadbeef' then the node does not exist anymore and the
+                        receiver has to delete it too.
+                    </p>
+
+                    <p>
+                        We see that (only) the client/GUI can change the content of a node. It is just the server
+                        that can add or remove nodes.
+                    </p>
+                    <p>
+                        This is a very basic method for syncronisation. Real distributed objects are more complex.
+                    </p>
+
+                    <div class="line"></div>
+
+
+
+                    <h2>Connect</h2>
+
+                    <p>
+                        When a new client connects, the server gives it an id and a config.
+                    </p>
+                    <p>
+                        When the client connects to the server, it gets a message back with the id that the server gives to it.
+                        Then, the id is saved in the server cache together with the configuration that is attributed from the config file: the server
+                        adds the new [id,  node] to its cache map of configs.
+                        The server cache is important because the server needs to send the whole network configuration to the new node.
+                        A network info message containing the whole configuration with all clients (including the new client) is broadcasted
+                        so that all clients can add the new client with their other nodes and so that the new client also has the nodes list.
+                    </p>
+
+                    <figure>
+                    <a href="img/Connect.png"><img src="img/Connect.png" class="imgcenter"></a>
+                    <figcaption class="captionleft">Fig. 8 Data synchronisation when a new client connects</figcaption>
+                    </figure>
+
+                    <div class="line"></div>
+
+
+                    <h2>Disconnect</h2>
+                    <p>
+                    There are 3 types of disconnect situations:
+                    <ul>
+                        <li> normal WS close
+                        <li> timeout
+                        <!--error?-->
+                    </ul>
+                    </p>
+
+                    <p>
+                    When a client disconnects, the server sets its associated node to 'deadbeef' and updates its
+                    cache by deleting the node. Then it broadcasts the new list, where the dead node is 'deadbeef' to
+                    the rest of the clients in the network.
+
+                    </p>
+                    <figure>
+                    <a href="img/Disconnect.png"><img src="img/Disconnect.png" class="imgcenter"></a>
+                    <figcaption class="captionleft">Fig. 9 Data synchronisation when a new client disconnects</figcaption>
+                    </figure>
+                    <div class="line"></div>
+
+
+
+                    <h2>Change Synchronized Data</h2>
+
+
+                    <p>
+                    The change of the config in the GUI triggers a change of some config of aclient. This causes an active change
+                    in the active client and a passive change in all the other clients.
+                    The client updates its cache with the new config and sends the new list of configurations to the server as a
+                    <i>networkInfoMsg</i>. The server receives the network info message and updates its cache, sending a multicast to all nodes
+                    except the one who sent the message. When the other clients get the network info message they have to perform a passive change
+                    by updating their cache and GUI.
+                    </p>
+
+                    <figure>
+                    <a href="img/Change.png"><img src="img/Change.png" class="imgcenter"></a>
+                    <figcaption class="captionleft">Fig. 10 Data synchronisation when a client changes a node</figcaption>
+                    </figure>
+
+
+                    <p>
+
+                    If a client loses its connection to the server it deletes its cache so that in case it connects again it doesn't
+                    have outdated information.
+
+
+                    <div class="line"></div>
+                    <h1>Datasync Implementation</h1>
+                    <div class="line"></div>
+
+
+                    <h2>Task: app.NetworkInfo in client</h2>
+
+                    <p>
+                    This task regard the implementation of the active change and passive change in the client
+                    described above.
+                    </p>
+
+                    <p>
+                        The code TODO is to be found in <i>client/client.js:app.networkInfo()</i>.
+                    </p>
+
+
+                    <div class="line"></div>
+
+
+
+                    <h2>Task: app.NetworkInfo in server</h2>
+
+                    <p>
+
+                    The implementation regards adding a node, removing a node and the server handling a passive change.
+                    The cache updates are already implemented. Use broadcast and multicast to communicate with the clients.
+
+                    </p>
+                    <p>
+                        The code TODO is to be found in <i>server/server.js:app.networkInfo()</i>.
+                    </p>
+
+
+                </div>
+            </div>
+
+            <div class="paper">
+                <div class="pheader"><div class="tab-active">&#x1f446;</div></div>
+                <div class="content">
+                    <h1>Protocol</h1>
+                    <div class="line"></div>
+
+                    While the implementation tasks in assigment 1 are limited in scope, the following conceptual task deals with the complete intended functionality of the distributed search system.
+
+                    <h2>Task: Protocol Design Specification</h2>
+
+                    <p>
+                    Write a design document specifying the client/server protocol for the distributed search. The document should contain a list of all messages that make up the protocol and a concise description of their semantics.
+                    </p>
+
+                    <p>
+                    The document should have a maximum of 3 pages. We encourage the use of diagrams (for example: sequence diagrams), therefore a maximum of 1 page of
+                    text (in total) is allowed. There is no introduction needed in the design document; you do not need to summarize the problem statement.
+                    </p>
+                    <p>
+                    Hand in the document as a PDF file in the <b>/doc</b> folder of the project (next to the client and server folders).
+                    </p>
+                    <p>
+                        As you are going to have to present the document during the first 5 minutes of your student interview (Abgabegespr&auml;ch)
+                        it is possible that you
+                        also prepare a short slideshow (5 minutes) presenting the documentation. This step is optional. If you decide
+                        to prepare this, your slideshow presentation document does not have to be in your repository. It is not graded as it is just
+                        intended to be a tool to help
+                        you present your solution and to show that you understood the assignment.
+                    </p>
+
+
+                    <div class="line"></div>
+
+        </div>
+
+        <div id="footer">
+            <div id="footer-server" style="margin: auto;"></div>
+            <div id="footer-students" style="margin: auto;"></div>
+        </div>
+    </body>
+</html>
