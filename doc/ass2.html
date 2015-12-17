@@ -1,0 +1,439 @@
+<html>
+    <head>
+        <link href="doc.css" rel="stylesheet" type="text/css">
+    </head>
+    <body id="body" onload="app.init()">
+        <div id="header">
+            <div id="connection">SVU 2015 Documentation</div>
+            <a target="_blank" href="../client/view.html">app</a> &#x2022;
+            <a target="_blank" href="../doc/ass1.html">&#x279f; ass1</a> &#x2022;
+            <a target="_blank" href="../doc/org.html">&#x279f; org</a>
+        </div>
+
+        <div class="column">
+            <div class="paper">
+                <div class="pheader"><div class="tab-active">&#x1f446;</div></div>
+                <div class="content">
+                    <h1>Overview</h1>
+                    <div class="line"></div>
+
+                    <p>
+                      This second assignment concerns itself with implementing distributed search.
+                    </p>
+                    <p>
+                        The sum of all points for this assignment is 47. Everything beyond 25 points can be considered as bonus points. However, at most 40 points can be earned for this assignment. Remember that the overall grading scale is based on a total of 100 points (25 each for two written tests and two assignments). Plan your work/life balance accordingly.
+                    </p>
+                    <p>
+                      Your code will be part of the application layer on both the client and the server side.
+                      There is no need to modify either the network layer or the user interface layer.
+                    </p>
+                    <p>
+                      This document also contains a documentation of the interface of the <a href="#viewapi">view module</a> and
+                      <a href="#simapi">sim module</a>.
+                      You should only use the documented interface to interact with the view layer.
+                      Do not use any other functions or variables from <i>view.js</i> and related modules,
+                      as this will cause the automated tests to fail.
+                    </p>
+                    <p>
+                        You should not modify existing functions in the source code unless there
+                        is a TODO comment in them. You may add new functions.
+                        Do not modify any files except for
+                        <i>client.js</i>, <i>server.js</i>, <i>messages.js</i>. You may add new
+                        files if necessary.
+                    </p>
+                </div>
+            </div>
+            <div class="paper">
+                <div class="pheader"><div class="tab-active">&#x1f446;</div></div>
+                <div class="content">
+                    <h1>1. Search Request (15P)</h1>
+                    <div class="line"></div>
+
+                    <p>
+                      Implement basic distributed search functionality.
+                    </p>
+                    <p>
+                      When the button is clicked in the GUI, <i>app.search</i> is invoked
+                      by the GUI layer. Your code should react by sending a search request to the server.
+                    </p>
+
+                    <ul>
+                      <li>In <i>app.search</i>, send a search request to the server</li>
+                      <li>The server should forward the search request to all clients</li>
+                      <li>Clients should handle incoming search requests and perform the actual search</li>
+                      <li>The server should aggregate the results and return them to the requesting client</li>
+
+                      <li>The requesting client must display the result to the user
+                        by calling <i>view.setResultItems</i>.</li>
+                      <li>The results shown to the user must be sorted by relevance (ascending sort by distance).</li>
+                      <li>When the request is finished, the client must notify the
+                        user interface layer by calling <i>view.updateViewState('ok')</i>.</li>
+                    </ul>
+                    
+                    Additionally, be aware that you are not alone in the world:
+                    <ul>
+                      <li>The system must continue to work even if new clients are
+                        added while a search is in progress.</li>
+
+                      <li>The server must be able to deal with multiple search
+                        requests arriving at the same time.</li>
+  
+                      <li>The client must be able to start multiple search requests
+                          at the same time (<i>app.search</i>called again with a
+                           different queryView parameter before the previous 
+                           invocation has finished).</li>
+                    </ul>
+                    
+                    <p id="task1sim">You <b>MUST</b> use the <i>app.db.visitRange</i> function
+                        to loop over the entities. In the callback you provide to
+                        this function, you <b>MUST</b> include a call
+                        to the simulator module as follows:</p>    
+<pre><code>    app.db.visitRange(first, last, function(entity, idx, isLast) {
+        // ...
+        if (idx >= (first + last) / 2)
+            if(sim.pointOfFailure('atWork') === 'stopWork')
+                return 'abort';
+        // ...
+    }</code></pre>
+                    <p>This allows the simulator module,and our <b>automated test cases</b>
+                        to simulate errors in order to see how your code deals with them.</p>
+                    
+                </div>
+            </div>
+            <div class="paper">
+                <div class="pheader"><div class="tab-active">&#x1f446;</div></div>
+                <div class="content">
+                    <h1>2. Error Handling (5P)</h1>
+                    <div class="line"></div>
+
+                    <p>Using the "⥴ disconnect" icon, you can configure
+                        the simulator to close a client's connection.</p>
+                    <p>Using the "⚡ throw an exception" icon, you can configure
+                        the simulator to throw an exception at various points.
+                        There are two kinds of exceptions the simulator will throw:
+                        ⚡ 'fatal' and ⛈ 'recoverable'.</p>
+                    <p>You can configure these failures to occur either at
+                    the beginning of <i>app.db.visitRange</i> ("before work"),
+                    or at <i>sim.pointOfFailure('atWork')</i> after half of the
+                    range has been searched.</p>
+                    
+                    <p>For this task, make your code handle those failures:</p>
+                
+                    <ul>
+                        <li>When a client closes the connection to the server during a
+                            search started by another client, the search results from the
+                            other clients must still be shown to the user,
+                            but the requesting client must report the error by calling
+                            <i>view.updateViewState('failed')</i>.</li>
+                        <li>When a 'recoverable' exception happens in a client,
+                            it has to be reported to the server. The server should
+                            still collect the results from the other clients. The requesting
+                            client must report failure to the user as above.</li>
+                        <li>When a 'fatal' exception happens in a client,
+                            it has to be reported to the server. The server should
+                            immediately report failure to the requesting client.</li>
+                    </ul>
+                </p>
+                
+
+                </div>
+            </div>
+        </div>
+
+        <div class="column">
+
+            <div class="paper">
+                <div class="pheader"><div class="tab-active">&#x1f446;</div></div>
+                <div class="content">
+                    <h1>3. Intermediate Results &amp; Progress</h1>
+                    <div class="line"></div>
+
+                    <h2 id="intermediate">3.1. Intermediate Results (5P)</h2>
+                    <p>Report results as they become available.</p>
+                    
+                    <p>In the client, call queryView.setResultItems whenever new results become available.
+                        As before, call <i>queryView.updateViewState('ok')</i>
+                        (or <i>queryView.updateViewState('failed')</i>) once the search is finished.
+                
+                    <h2 id="progress">3.2. Progress Indicator (5P)</h2>
+
+                    <p>Keep track of search progress.</p>
+                    
+                    <p>The clients performing the work should regularily send messages
+                        to the server (even when no result has been found yet).
+                        The client that initiated the search should display the progress to the user by repeatedly calling
+                        <i>queryView.updateViewState('running', 'any message you want to display', progress)</i>,
+                        where <i>progress</i> is a number in the range 0-100.</p>
+                </div>
+            </div>
+
+            <div class="paper">
+                <div class="pheader"><div class="tab-active">&#x1f446;</div></div>
+                <div class="content">
+                    <h1>4. Timeouts</h1>
+                    <div class="line"></div>
+                    <h2 id="overallTimeout">4.1. Overall Timeout (2P)</h2>
+                    <p>Implement a client-side overall timeout mechanism.</p>
+                    
+                    <p>If the server does not finish a search request within <i>param.config.overallTimeout</i> milliseconds (default value: 7000),
+                        the client should report the search as 'failed' to the user.</p>
+                        
+                    <h2 id="responseTimeout">4.2. Response Timeout (5P)</h2>
+
+                    <p>(This task is easier to implement if you have already implemented <a href="#progress">3.2. Progress Indicator</a>)</p>
+                    
+                    <p>If <i>param.config.responseTimeoutEnabled</i> is true in the call to <i>app.search</i>,
+                        the server should trigger a timeout whenever a client fails to send
+                        a message within <i>param.config.responseTimeout</i> milliseconds.</p>
+
+                    <p>If that occurs, the server must not wait for the slow client to finish,
+                        and the search must be reported as 'failed' to the user.</p>
+                </div>
+            </div>
+
+            <div class="paper">
+                <div class="pheader"><div class="tab-active">&#x1f446;</div></div>
+                <div class="content">
+                    <h1>5. Cancelling Requests (5P)</h1>
+                    <div class="line"></div>
+
+                    <p>Implement a way to cancel an in-progress search</p>
+                    
+                    <p><b>Important:</b> To avoid interfering with test cases for other functionality, the following should only happen if <i>param.config.cancelOnFatalEnabled</i> is true.</p>
+                    
+                    <ul>
+                        <li>User-cancel: when the cancel button is pressed, all clients should be notified.</li>
+                        <li>When a client-side overall timeout (<a href="#overallTimeout">4.1</a>) happens, the search should be canceled.</li>
+                        <li>When a client is too slow in performing a search (= when a <a href="#responseTimeout">response timeout</a> happens), that client should be canceled so that it does not do unnecessary work, unless <a href="#recovery">6. Recovery</a> is also implemented.</li>
+                        <li>When a 'fatal' exception is thrown in any client, the entire search should be canceled.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="paper">
+                <div class="pheader"><div class="tab-active">&#x1f446;</div></div>
+                <div class="content">
+                    <h1 id="recovery">6. Recovery (5P)</h1>
+                    <div class="line"></div>
+
+                    <p><b>Important:</b> To avoid interfering with test cases for other functionality, the following should only happen if <i>param.config.tryRecoverEnabled</i> is true.</p>
+                    
+                    
+                    
+                    <ul>
+                        <li>When a client disconnects during a search, reports a 'recoverable' exception or times out according to <a href="#responseTimeout">4.2</a>, the work assigned to that client should be re-assigned to a different client.</li>
+                        <li>For extra points, split the work among the remaining clients rather than assigning it to a single client.</li>
+                        <li>If you have implemented <a href="#intermediate">3.1. Intermediate Results</a>, take care that you do not report duplicate results when you reassign a work package after partial results have been delivered.</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+        <div class="column">
+
+            <div class="paper">
+                <div class="pheader"><div class="tab-active">&#x1f446;</div></div>
+                <div class="content">
+                    <h1>API: Handlers to implement</h1>
+                    <div class="line"></div>
+                    
+                    <p><code>app.onMessage</code></p>
+                    <p>In server and client. Contains a  TODO mark.</p>
+
+                    <div class="line"></div>
+                    <p><code>app.search = function(queryView, param)</code></p>
+                    <p>In the client. This function is called by the UI when the ▶ Button is
+                    clicked. We deliver this function with some API examples,
+                    you should remove them for your implementation, and put them
+                    in the correct place. Only the queryView.oncancelclick
+                    handler is in the right place (but not fully implemented).
+                    </p>
+ 
+                    <p><b>@param {object} queryView:</b> Points to the tabView
+                    which started the search. You must use
+                    queryView.updateViewState, queryView.setResultItems to show
+                    your search results. You must use them, because we will
+                    replace the view with the test module to verify your query
+                    results! Take a closer look on the documentation of these two
+                    functions, and the examples in app.search, to use them
+                    correctly and get your hard-earned points!</p>
+
+                    <p><b>@param {object} param:</b> Contains the parameter for
+                    your query, including threshold, entity to compare, and a
+                    configuration object. The default implementation logs the
+                    param object when the ▶ Button is clicked. Change some
+                    setting in the search header (Threshold, enable some
+                    advanced features with the 🕒🍀⛔ buttons on the left
+                    side...) and take a look on the console output to see the
+                    structure of the param object. Some (see task description)
+                    features MUST NOT be active if the according param.config
+                    flag is not set, i.e. error recovery MUST NOT be done if
+                    param.config.tryRecoverEnabled is not true. The test system
+                    will not work otherwise (so you will lose points). If you
+                    implement any timeout features, use the timeout values in
+                    the params.config object (unit is always milliseconds).</p>
+
+                </div>
+            </div>
+            <div class="paper">
+                <div class="pheader"><div class="tab-active">&#x1f446;</div></div>
+                <div class="content">
+                    <h1 d="viewapi">API: View</h1>
+                    <div class="line"></div>
+                    
+                    <p><code>queryView.updateViewState(state, msg,
+                    progress)</code></p>
+                    <p>This function is used to deliver the
+                    query state to the view, and the test system! You can call
+                    it multiple times with state ‘running’, but after it has
+                    been called with state ‘ok’ or ‘failed’,
+                    <i>queryView.updateViewState</i> and <i>queryView.setResultItems</i> must
+                    not be called until a new query is started.</p>
+
+                    <p><b>@param {string} state:</b> Valid values are
+                    { ‘running’ | ‘ok’ | ‘failed’ }.</p>
+
+                    <p><b>@param {string} msg:</b> Free text. Use it for
+                    debugging or fun. The test system will not check this
+                    value.</p>
+
+                    <p><b>@param {number} progress:</b> Indicates the progress
+                    in %, so valid values are 0-100. Use it if you decide to
+                    implement the <a href="#progress">progress feature</a>.
+                    Otherwise don't supply this argument.</p>
+
+                    <div class="line"></div>
+
+                    <p><code>queryView.setResultItems(matches)</code></p>
+                    <p>Call this function to display matching 3d models, and to
+                    report your matches to the test system. You can call it
+                    multiple times, but don’t call it after <i>updateViewState</i>
+                    was called with state ‘ok’ or ‘failed’ (until <i>app.search</i>
+                    is called again). If you call it multiple times, the last given
+                    matches array will be compared by the test system. Hint: if
+                    a 3d model occurs multiple times in the matches array it
+                    will be marked with a red border in the view. Maybe the test
+                    system shows a different reaction ;)</p>
+
+                    <p><b>@param {array} matches:</b> An array of matching 3d
+                    objects. See API examples in <i>app.search</i> for object
+                    structure. Hint: The array elements have the same structure
+                    as the object returned by compareEntity. You are responsible
+                    to sort this array before.</p>
+
+                </div>
+            </div>
+            <div class="paper">
+                <div class="pheader"><div class="tab-active">&#x1f446;</div></div>
+                <div class="content">
+                    <h1 id="simapi">API: Sim</h1>
+                    <div class="line"></div>
+                    
+                    <p><code>app.db.visitRange(begin, end, function(entity, idx, isLast)</code></p>
+                    
+                    <p>Instead of using loops to iterate over database entities,
+                    you MUST use this function. If you do so, the delay, stop
+                    working, and exception simulation will work. The test system
+                    assumes to be able to simulate these conditions, or in other
+                    words, if you don't use it you will lose a lot of
+                    points.</p>
+
+                    <p>If you want to stop the ‘loop’ i.e. because you are
+                    implementing the user cancel feature, just return the string
+                    ‘abort’.</p>
+
+                    <p>Try out to change the ‘⏰ visitRange works slowly’, ‘⚡
+                    throw an exception’, and ‘☠ visitRange stops’ settings of
+                    your client, and observe the behaviour of the Api example in
+                    app.serach.</p>
+
+                    <p>The visitor function is called by a timer callback, so
+                    think about exceptions in this function. (As you should
+                    always think about in an asynchronous system. For those who
+                    didn't understand the threading model of such a system… it’s
+                    really time read about it)</p>
+
+                    <p><b>@param {number} begin:</b> first database element to visit</p>
+                    <p><b>@param {number} end:</b> last database element to visit</p>
+                    <p><b>@param {function} visitor:</b> This function is called
+                    for all database elements &gt;= begin and &lt;= end (if no
+                    error simulation is configured). <i>entity</i> contains the
+                    database element, idx its id, and isLast is true if entity
+                    is the last visited element.</p>
+
+
+                    <div class="line"></div>
+                    
+                    <p><code>sim.log('app', 'log', ...)</code></p>
+                    
+                    <p>This is just for your convenience, you don’t need to use
+                    this helper, but if you do so, you can switch on/off logging
+                    of all clients and the server at the ☍Network Panel to avoid
+                    logging spam.</p>
+
+                    <p>The function is similar to console.log/warn/error/trace.
+                    additionally it distinguishes tree log categories (⥴ app, ⥂
+                    own, ☍ net) which can be enabled/disabled separately. The
+                    provided network implementation logs all in/outgoing
+                    messages as ‘net’. You can use ‘app’ and ‘own’ for your
+                    purposes.</p>
+
+                    <p><b>@param {string} logCategory:</b> Valid values are
+                    ‘app’ (⥴), ‘own’’ (⥂), ‘net’’ (☍)</p>
+                    <p><b>@param {string} consoleFunction:</b>
+                    selects the console function to use, so
+                    valid values are ‘log’, ‘warn’, ‘error’, ‘trace’... (see
+                    console documentation). Hint: you can filter by the used
+                    function in chrome developer console.</p>
+                    <p><b>@param 3 - n:</b>
+                    The remaining parameters are given to the console
+                    function if the given logCategory is enabled.</p>
+
+                    <div class="line"></div>
+                    <p><code>sim.pointOfFailure('u1', c)</code></p>
+
+                    <p>This helper is used to simulate exceptions,
+                    disconnections, or starvation of workers. In real systems
+                    the system has to cope with such circumstances.</p>
+
+                    <p>You <b>MUST</b> include one call to this function as
+                    specified in <a href="#task1sim">Task 1</a>.</p>
+
+                    <p>In order to make testing your code more convenient, you
+                    may also include further calls to this function in your
+                    code.</p>
+
+                    <p>This function will throw an exception or close the given
+                    connection c, if enabled in simconfig and the given
+                    pointOfFailure (i.e. ‘u1’) argument matches the configured
+                    point of failure (i.e. user defined 1). Except as specified
+                    in <a href="#task1sim">Task 1</a>, do not use other point of
+                    failure values like ‘beforeWork’.</p>
+
+                    <p>We distinguish two kinds of exceptions, you can choose
+                    wich one is thrown at the config panel. First the ⚡ ‘fatal’
+                    exception, the query should always be aborted if such
+                    exception occurs. And second the ⛈ ‘recoverable’ exception.
+                    If you choose to implement any error recovery features, this
+                    exception as well as timeouts should trigger them (as
+                    mentioned bevore only if param.config.tryRecoverEnabled is
+                    true).</p>
+
+
+                    <p><b>@param {string} pointOfFailure:</b>
+                    Valid values are: ‘u1’ (user defined 1), ‘u2’ (user defined
+                    2), ‘u3’ (user defined 3).</p>
+                    
+                    <p><b>@param {connection} c:</b> The connection which should
+                    be closed if ‘disconnect’ is enabled at this point of failure.</p>
+                </div>
+            </div>
+
+        </div>
+
+        <div id="footer">
+            <div id="footer-server" style="margin: auto;"></div>
+            <div id="footer-students" style="margin: auto;"></div>
+        </div>
+    </body>
+</html>

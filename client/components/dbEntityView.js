@@ -4,6 +4,7 @@ function entityViewPanel(model, contentFactory)
         var blueHeader = document.createElement('div')
         var thumbnail = contentFactory(model)
 
+    viewElement.header = blueHeader
     blueHeader.className = 'header'
     thumbnail.className = 'thumbnail'
     viewElement.model = model

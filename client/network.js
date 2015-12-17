@@ -1,63 +1,60 @@
-var network = {};
-network.nextFreeConnectionId = 0; // zählt einfach hoch, nur zum Debuggen
-network.onConnectionChanged = undefined;
-network.connection = {};
-network.connection.send = function() { throw new Error("Websocket never opened") };
-network.connection.close = function() { /* nothing to do */ };
-/**
- * network.connect network connection functionality
- *
- * @param url websocket Url
- *
- * Student TODO (Task: Client Network):
- *              1. Open WebSocket
- *              2. Set appropriate network state
- *              3. Define appropriate websocket events
- *                 - onopen: provide connection id, connection.close, connection.send (similar to server),
- *                   set appropriate state
- *                 - onmessage: parse and report to app
- *                 - onclose: set appropriate state, set timeout with networkconnect as callback function and appropriate
- *                   reconnect interval (see config file)
- *              4. Handle errors
- */
+var network = {}
+network.onMessage = undefined
+network.nextFreeConnectionId = 0 // zählt einfach hoch, nur zum debuggen
+network.onConnectionChanged = undefined
+network.connection = {}
+network.connection.send = function() { throw new Error("Websocket never opened") }
+network.connection.close = function() { /* nothing to do */ }
 network.connect = function(url)
 {
     try
     {
-        network.onConnectionChanged('Connecting', network.connection);
+        var ws = new WebSocket(url)
+        network.onConnectionChanged('Connecting', network.connection)
 
-        var connection = new WebSocket(url);
-
-        connection.onopen = function() {
-            network.connections[connection.id] = connection;
-            network.onConnectionChanged('Connected', network.connection);
-            network.connection.send = function(msg){
-                connection.send(JSON.stringify(msg));
+        ws.onopen = function()
+        {
+            network.connection = {}
+            network.connection.id = network.nextFreeConnectionId++
+            network.connection.close = function() { ws.close() }
+            network.connection.send = function(msg)
+            {
+                var data = JSON.stringify(msg)
+                try
+                {
+                    ws.send(data)
+                    sim.log('net', 'log', '⟶', msg)                    
+                }
+                catch(e)
+                {
+                    ws.close()
+                    throw e
+                }
             }
-        };
-
-        connection.onerror = function (error) {
-            delete network.connections[connection.id];
-            console.log('WebSocket Error ' + error);
-        };
-
-        // Log messages from the server
-        connection.onmessage = function (e) {
-            app.onMessage(network.connection, JSON.parse(e.data));
-        };
-
-        connection.onclose = function (e) {
-            delete network.connections[connection.id];
-            network.onConnectionChanged('Disconnected', network.connection);
-            setTimeout(function(){
-                network.connect(url);
-            }, config.client.reconnectIntervall);
-        };
-
+            network.onConnectionChanged('Connected', network.connection)
+        }
+        ws.onmessage = function(ev)
+        {
+            try
+            {
+                var parsed = JSON.parse(ev.data)
+                sim.log('net', 'log', '⟵', parsed)
+                network.onMessage(network.connection, parsed)
+            }
+            catch(e)
+            {
+                console.error(e.stack)
+            }
+        }
+        ws.onclose = function(ev)
+        {
+            network.onConnectionChanged('Disconnected', network.connection)
+            setTimeout(function() { network.connect(url)}, config.client.reconnectIntervall)
+        }
     }
     catch(e)
     {
-        console.error(e.stack);
+        console.error(e.stack)
         network.onConnectionChanged('Disconnected', network.connection)
     }
-};
+}

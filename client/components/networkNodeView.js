@@ -16,7 +16,7 @@ error.delaySlider = function()
     slider.id = 'delay'
     return slider
 }
-error.pOfSelect = function()
+error.pOfSelect = function(listClass)
 {
     // \uD83D\uDDA5
     // \u21B7
@@ -31,12 +31,19 @@ error.pOfSelect = function()
         select.datachange(select.value, undefined)
     }
 
-    select.options.add(new Option("☏ before request", "beforeRequest"))
-    select.options.add(new Option("☎ after request",  "afterRequest"))
-    select.options.add(new Option("⚒ before work",    "beforeWork"))
-    select.options.add(new Option("⚒ at work",        "atWork"))
-    select.options.add(new Option(" on response",    "onResponse"))
-    select.options.add(new Option("⇥ on terminate",   "onTerminate"))
+    if (listClass !== 'disconnect')
+    {
+        select.options.add(new Option("⚒ before work",    "beforeWork"))
+        select.options.add(new Option("⚒ at 50%",        "atWork"))
+    }
+    if (listClass !== 'stopWork')
+    {
+        select.options.add(new Option("on request", "onRequest"))
+    }
+    select.options.add(new Option("user defined 1", "u1"))
+    select.options.add(new Option("user defined 2", "u2"))
+    select.options.add(new Option("user defined 3", "u3"))
+
     select.style.height = 21
     select.style.float = 'right'
     select.style.marginLeft = 10
@@ -116,9 +123,9 @@ function nodeConfigView()
 
     var viewFactory =
     {
-        delayed:    function() { return error.delaySlider()      },        
-        stopWork:   function() { return error.pOfSelect()        },
-        disconnect: function() { return error.pOfSelect()        },
+        delayed:    function() { return error.delaySlider()      },
+        stopWork:   function() { return error.pOfSelect('stopWork')        },
+        disconnect: function() { return error.pOfSelect('disconnect')        },
         exception:  function() { return error.exceptionsSelect() }
     }
 

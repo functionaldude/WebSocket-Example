@@ -20,37 +20,39 @@ function searchView(dbItem, tabId)
         if (dbItem)
             queryParameter.setValue(dbItem)
 
+        status.innerText = ''
+        result.innerText = ''
+        status.style.display = 'block'
+
         var jconfig =
         {
-            terminateTimeout: config.client.terminateTimeout,
+            overallTimeout: config.client.overallTimeout,
+            responseTimeoutEnabled: jpResponseTimeout.check,
             responseTimeout: jpResponseTimeout.check ? config.client.responseTimeout : undefined,
-            cancelOnFatal: jpCancel.check,
-            tryRecover: jpErrorRecover.check
+            cancelOnFatalEnabled: jpCancel.check,
+            tryRecoverEnabled: jpErrorRecover.check
         }
-        tab.j = app.search(tab, queryParameter.value(), jconfig)
-        tab.updateControlState()
-        tab.onJobChanged(tab.j)
-        tab.j.execute()
+        var params = queryParameter.value()
+        params.config = jconfig
+        tab.updateViewState('running')
+        app.search(tab, params)
+
+        tab.onJobChanged(tabId)
     }
     tab.cancelQuery = function()
     {
         stop.disabled = true
-        tab.j.cancel()
+        tab.oncancelclick()
     }
-    tab.updateControlState = function(stat)
+    tab.updateViewState = function(s, msg, progress)
     {
-        tab.busy = !tab.j.isTerminatated()
-
-        if (tab.busy)
+        status.innerText = s + (msg ? ': ' + msg : '') + (progress ? ' progress: ' + progress + '%'  : '')
+        if (s === 'running')
         {
             start.style.display = 'none'
             stop.style.display = 'block'
             restart.style.display = 'none'
             queryParameter.setDisabled(true)
-
-            result.innerText = ''
-            status.innerText = ''
-            status.style.display = 'block'
         }
         else
         {
@@ -61,8 +63,9 @@ function searchView(dbItem, tabId)
             queryParameter.setDisabled(false)
         }
     }
-    tab.insertResultItems = function(dbItems)
+    tab.setResultItems = function(dbItems)
     {
+        result.innerText = ''
         for(var i = 0; i < dbItems.length; i++)
         {
             var matchItem = dbItems[i]
@@ -72,38 +75,19 @@ function searchView(dbItem, tabId)
             {
                 view.insertTab(matchItem.dbEntity).startQuery()
             }
-            var firstWithGreaterDiff = undefined
-            for (var j = 0; j < result.childNodes.length; j++)
+
+            for(var j = 0; j < i; j++)
             {
-                var current = result.childNodes[j]
-                if (current.model.diff > matchItem.diff)
-                {
-                    firstWithGreaterDiff = current
-                    break
+                var current = dbItems[j]
+                if (current.mid == matchItem.mid)
+                {                    
+                    viewElement.header.style.backgroundColor = 'red'
                 }
             }
-            result.insertBefore(viewElement, firstWithGreaterDiff)
+
+            result.appendChild(viewElement)
         }
     }
-    tab.updateJobState = function(j)
-    {
-        tab.onJobChanged(tab.j)
-
-        var jview = document.getElementById('j' + j.id)
-        if (!jview)
-        {
-            jview = jobStatusView(j.id)
-            var jobviewParentDiv = status
-            if (j.pid !== undefined)
-                jobviewParentDiv = document.getElementById('j' + j.pid + '-subjobs')
-            jobviewParentDiv.appendChild(jview)
-        }
-        jview.appendLog(j)
-
-        if (j.origin)
-           tab.updateJobState(j.origin)
-    }
-
 
     query.className = 'query'
     start.id = 'start'
@@ -176,12 +160,11 @@ function searchView(dbItem, tabId)
     query.appendChild(stop)
     query.appendChild(restart)
     query.appendChild(queryParameter)
-    //query.appendChild(jpResponseTimeout)
-    //query.appendChild(jpErrorRecover)
-    //query.appendChild(jpCancel)
+    query.appendChild(jpResponseTimeout)
+    query.appendChild(jpErrorRecover)
+    query.appendChild(jpCancel)
     tab.appendChild(query)
     tab.appendChild(status)
     tab.appendChild(result)
     return tab
 }
-

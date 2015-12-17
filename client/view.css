@@ -110,7 +110,7 @@
 }
 
 .object{
-    margin: -1 10 2 9;
+    margin: -1 10 0 9;
     background-color: #fefefe;
     border-style: solid;
     border-color: #E3E9FF #C8D2F5 #C8D2F5 #E3E9FF;
@@ -516,11 +516,8 @@ img{
     list-style-type: none;
     overflow: auto;
     clear: left;
-    padding: 10 10 10 40;
-    margin: 0;
-    border-style: dashed;
-    border-color: #e0e0e0;
-    border-width: 1 0 0 0;
+    padding: 20 40 20 40;
+    margin: 0;    
 }
 
 #nodes .errorSimList:empty{

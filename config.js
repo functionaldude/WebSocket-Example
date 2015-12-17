@@ -3,28 +3,27 @@
     exports.dbsize = 100
     exports.authors = []
     exports.authors[0] = {}
-    //Student TODO: Enter team members' names and matricular numbers.
-    exports.authors[0].matNr     = '1330435'
-    exports.authors[0].firstName = 'Zoltan'
-    exports.authors[0].lastName  = 'Szasvari'
+    exports.authors[0].matNr     = '0230699'
+    exports.authors[0].firstName = 'Michael'
+    exports.authors[0].lastName  = 'Glatzhofer'
     exports.authors[1] = {}
-    exports.authors[1].matNr     = '1331335'
-    exports.authors[1].firstName = 'Andreas'
-    exports.authors[1].lastName  = 'Wöls'
+    exports.authors[1].matNr     = ''
+    exports.authors[1].firstName = 'config.js must contain'
+    exports.authors[1].lastName  = ''
     exports.authors[2] = {}
-    exports.authors[2].matNr     = '1331106'
-    exports.authors[2].firstName = 'Alexander'
-    exports.authors[2].lastName  = 'Grass'
+    exports.authors[2].matNr     = ''
+    exports.authors[2].firstName = ''
+    exports.authors[2].lastName  = 'matNr, firstname and lastname'
     exports.server = {}
     exports.server.wsport          = 1336
     exports.server.httpport        = 1337
     exports.server.requestProgress = 0.05
     exports.client = {}
     exports.client.reconnectIntervall = 300
-    exports.client.terminateTimeout   = 7000
-    exports.client.ttfbTimeout        = 500
-    exports.client.responseTimeout    = 200
-    exports.client.cancelTimeout      = 500
+    exports.client.overallTimeout   = 7000
+    //exports.client.ttfbTimeout        = 500
+    exports.client.responseTimeout    = 500
+    //exports.client.cancelTimeout      = 500
     exports.client.requestProgress    = 0.02
     exports.client.highlightTime      = 1000    
     exports.colors = {}
@@ -48,23 +47,22 @@
     exports.colors.enabledIcon     = '#00CC66'
 
     exports.client.defaultSimConfig = {}
-    exports.client.defaultSimConfig.delayed    = { active:true,  icon:'⏰', text:'work slowly',       value:50                          } //🐌⌛
-    exports.client.defaultSimConfig.exception  = { active:false, icon:'⚡',  text:'throw an exception', value:'fatal', pof:'atWork'       }
-    exports.client.defaultSimConfig.stopWork   = { active:false, icon:'☠',  text:'stop working',                     pof:'atWork'       }
-    //exports.client.defaultSimConfig.disconnect = { active:false, icon:'↛',  text:'disconnect',                       pof:'afterRequest' }
-    exports.client.defaultSimConfig.delegate   = { active:false, icon:'☞',  text:'delegate to server'                                   }
     //exports.client.defaultSimConfig.ignore     = { active:false, icon:'🖕',  text:'ignore cancel request'                                }
-    exports.client.defaultSimConfig.lognet     = { active:false, icon:'☍',  text:'log network messages'     } //ⶨ
-    exports.client.defaultSimConfig.logjob     = { active:false, icon:'⥂',  text:'log reliable messages'    } //⇌
-    exports.client.defaultSimConfig.logapp     = { active:true, icon:'⥴',   text:'log best-effort messages' } //⚘
+    exports.client.defaultSimConfig.net     = { active:true, icon:'☍',  text:'log network messages (net)'     } //ⶨ
+    exports.client.defaultSimConfig.own     = { active:false, icon:'⥂',  text:'log your own log category messages ()\n...'    } //⇌
+    exports.client.defaultSimConfig.app     = { active:true, icon:'⥴',   text:'log application messages (app)\nlogs when a search is started or requested' } //⚘
+
+    exports.client.defaultSimConfig.delayed    = { active:true,  icon:'⏰', text:'visitRange works slowly',              value:50                          } //🐌⌛
+    exports.client.defaultSimConfig.stopWork   = { active:false, icon:'☠',  text:'visitRange stops',                     pof:'atWork'       }
+    exports.client.defaultSimConfig.exception  = { active:false, icon:'⚡',  text:'throw an exception',       value:'fatal', pof:'atWork'       }
+    exports.client.defaultSimConfig.disconnect = { active:false, icon:'↛',  text:'disconnect',                  pof:'onRequest' }
 
     exports.server.defaultSimConfig = {}
-    exports.server.defaultSimConfig.exception  = { active:false, icon:'⚡',  text:'throw an exception', value:'recoverable', pof:'beforeWork'   }
-    exports.server.defaultSimConfig.stopWork   = { active:false, icon:'☠',  text:'stop working',                           pof:'beforeWork'   }
-    //exports.server.defaultSimConfig.disconnect = { active:false, icon:'↛',  text:'disconnect',                             pof:'afterRequest' }
-    //exports.server.defaultSimConfig.ignore     = { active:false, icon:'🖕',  text:'ignore cancel request'                                      }
-    exports.server.defaultSimConfig.lognet     = { active:false, icon:'☍',  text:'log network messages'     }
-    exports.server.defaultSimConfig.logjob     = { active:false, icon:'⥂',  text:'log reliable messages'    }
-    exports.server.defaultSimConfig.logapp     = { active:true,  icon:'⥴',  text:'log best-effort messages' } // ⎎⚘
+    exports.server.defaultSimConfig.net     = { active:true, icon:'☍',  text:'log network messages (net)'     } //ⶨ
+    exports.server.defaultSimConfig.own     = { active:false, icon:'⥂',  text:'log your own log category messages ()\n...'    } //⇌
+    exports.server.defaultSimConfig.app     = { active:true, icon:'⥴',   text:'log application messages (app)\nlogs when a search is started or requested' } //⚘
+
+    exports.server.defaultSimConfig.exception  = { active:false, icon:'⚡',  text:'throw an exception',       value:'fatal', pof:'atWork'       }
+
 })
 (typeof exports === 'undefined' ? this['config']={} : exports)

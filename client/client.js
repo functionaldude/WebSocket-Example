@@ -1,30 +1,103 @@
-var app = {};
-app.clientId = undefined;
-app.wsUrl = 'ws://' + document.location.hostname + ':' + config.server.wsport;
+var app = {}
+app.clientId = undefined
+app.wsUrl = 'ws://' + document.location.hostname + ':' + config.server.wsport
 app.setClientId = function(yourId)
 {
-    app.clientId = yourId;
+    app.clientId = yourId    
     view.setConnectionInfo('Connected as client ' + 'C' + Number(app.clientId).toSubscript())
-};
+}
 
 
 // called by GUI --------------------------------------------------------------------------
 
 app.init = function()
 {
-    app.db.load();
-    view.loadAuthors();
-    view.insertTab();
-    view.networkInfo.onChanged = app.networkInfo.activeChange;
-    network.onConnectionChanged = app.onNetworkStateChange;
+    app.db.load()
+    view.loadAuthors()
+    view.insertTab()
+    view.networkInfo.onChanged = app.networkInfo.activeChange
+    network.onConnectionChanged = app.onNetworkStateChange
+    network.onMessage = app.onMessage
     network.connect(app.wsUrl)
-};
+}
 app.reloadAll = function()
 {
-    var msg = messages.reloadMsg();
-    var channelMsg = messages.channelMsg('Ws', msg);
+    var msg = messages.reloadMsg()
+    var channelMsg = messages.channelMsg('Ws', msg)
     network.connection.send(channelMsg)
-};
+}
+app.search = function(queryView, param)
+{
+    // STUDENT TODO: This function is called when the search button is clicked.
+    // Start your distributed search here.
+    // The code in this function is meant to provide you with examples on how
+    // to use the various functions. Most of it does *not* belong here in your
+    // solution.
+    
+    queryView.oncancelclick = function()
+    {
+        sim.log('app', 'log', 'user clicked cancel')
+    }
+
+    // use sim.log instead of console.log to enable and disable
+    // console messages acording to the ☍Network Panel
+    sim.log('app', 'log', '⟶', param)
+
+    /// use sim.pointOfFailure in order to simulate errors
+    try
+    {
+        sim.pointOfFailure('u1', network.connection)
+    }
+    catch(e)
+    {
+        queryView.updateViewState('failed', e)
+        throw e
+    }
+
+    queryView.setResultItems([{
+        dbEntity:{
+            mid: 7,
+            thumbnailUrl:'../db/thumbnails/m7_thumb.png'
+        },
+        diff:9
+    },
+    {
+        dbEntity:{
+            mid: 7,
+            thumbnailUrl:'../db/thumbnails/m7_thumb.png'
+        },
+        diff:9
+    }])
+
+    var first = 50;
+    var last = 99;
+    app.db.visitRange(first, last, function(entity, idx, isLast)
+    {
+        // the delay is implemented with a timer,
+        // this function is called in a timer callback if delay is activated.
+        // so catch exceptions here (never throw a exceptin to a timer callback)
+        try {
+            sim.log('own', 'log', 'visiting', idx, entity)
+            queryView.updateViewState('running', 'Running local search on entity: ' + idx, idx)
+
+            // After half of the work, simulate a "point of failure."
+            // Depending on the configuration, sim.pointOfFailure might
+            // close your connection, throw an exception, return 'stopWork', or
+            // just do nothing.
+            // THIS IS NECESSARY FOR THE TEST CASES TO WORK.
+            if (idx >= (first + last) / 2)
+                if(sim.pointOfFailure('atWork') === 'stopWork')
+                    return 'abort';
+
+            if (isLast)
+                queryView.updateViewState('ok', 'we did something')
+        } catch(e) {
+            // Handle the exception hrrtr 
+            return 'abort';
+        }
+    })
+
+}
 
 // called by Net --------------------------------------------------------------------------
 
@@ -35,7 +108,7 @@ app.onNetworkStateChange = function(state, connection)
         onConnecting: function()
         {
             view.setConnectionInfo('Auto reconnect \u21c4')
-        },
+        },visitRange
 
         onConnected: function()
         {
@@ -44,134 +117,152 @@ app.onNetworkStateChange = function(state, connection)
 
         onDisconnected: function()
         {
-            view.setConnectionInfo('Auto reconnect');
-            view.db.setRange();
+            view.setConnectionInfo('Auto reconnect')
+            view.db.setRange()
             view.networkInfo.update('clear')
         }
 
     }['on'+state]()
-};
+}
 
-/**
- * @param c connection
- * @param parsed received parsed message
- *
- * Student TODO (Task: Dispatching messages in client): depending on the type of the parsed message,
- *              call the appropriate function:
- *              location.reload, app.setClientId, app.networkInfo.passiveChange
- */
 app.onMessage = function(c, parsed)
 {
     var channelHandlers =
     {
         onWsMessage: function(c, parsed)
-        {
-            sim.log('app', 'log', '⟵', parsed);
+        { sim.log('app', 'log', '⟵', parsed)
 
-            if (parsed.type === 'Reload'){
-                location.reload();
-            }
-            if (parsed.type === 'ClientId'){
-                c.id = parsed.yourId;
-                app.setClientId(parsed.yourId);
-            }
-            if (parsed.type === 'NetworkInfo'){
-                app.networkInfo.passiveChange(c, parsed);
-            }
+            var messageHandlers =
+            {
+                onReload: function(c, parsed)
+                {
+                    location.reload(true)
+                },
+
+                onClientId: function(c, parsed)
+                {
+                    app.setClientId(parsed.yourId)
+                },
+
+                onNetworkInfo: function(c, parsed)
+                {                    
+                    app.networkInfo.passiveChange(c, parsed)
+                }
+
+            }['on'+parsed.type](c, parsed)
+        },
+
+        onJobMessage: function(c, parsed)
+        {
+            sim.log('app', 'log', '⟵', parsed)
+            sim.pointOfFailure('onRequest', c)
+
+            // STUDENT TODO:
         }
+
     }['on'+parsed.type+'Message'](c, parsed.payload)
-};
+}
+
+// services -------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------------------
 
 app.db = function()
 {
-    var db = { data:undefined, pageNr:0, fetch:0 };
-    db.begin = function() { return db.pageNr * config.dbsize };
+    var db = { data:undefined, pageNr:0, fetch:0 }
+    db.begin = function() { return db.pageNr * config.dbsize }
 
-    db.size    = function()    { return db.data.length };
-    db.getItem = function(mid) { return db.data[mid]   };
+    db.size    = function()    { return db.data.length }
+    db.getItem = function(mid) { return db.data[mid]   }
 
-    db.nextPage = function() { db.pageNr += 1; db.load() };
-    db.prevPage = function() { db.pageNr -= 1; db.load() };
+    db.nextPage = function() { db.pageNr += 1; db.load() }
+    db.prevPage = function() { db.pageNr -= 1; db.load() }
 
     db.load = function()
     {
-        db.data = [];
-        view.db.clear();
-        var dbprogress = view.db.addWorkerView('db' + db.fetch++);
+        db.data = []
+        view.db.clear()        
+        var dbprogress = view.db.addWorkerView('db' + db.fetch++)
 
         for (var i = 0; i < config.dbsize; i++)
         {
-            var realId = db.pageNr * config.dbsize + ~~((i%10)*10+(i/10)%10);
+            var realId = db.pageNr * config.dbsize + ~~((i%10)*10+(i/10)%10)
 
-            var item = loadDbEntity(i, realId);
+            var item = loadDbEntity(i, realId)
             item.setFeatures = function(f)
             {
-                this.features = f;
+                this.features = f
 
                 if (!this.features)
-                    view.db.setModelHeader(this.mid, 0, 'red');
+                    view.db.setModelHeader(this.mid, 0, 'red')
                 else
-                    view.db.setModelHeader(this.mid, 0);
+                    view.db.setModelHeader(this.mid, 0)
 
                 if (++dbprogress.value >= config.dbsize)
                     view.db.removeWorkerView(dbprogress.id)
-            };
+            }
 
-            db.data.push(item);
+            db.data.push(item)
             view.db.insertDbItem(item)
         }
-    };
+    }
 
+    db.visitRange = function(begin, end, visitor)
+    {
+        var count = end-begin
+        var current = begin - 1
+
+        if(sim.pointOfFailure('beforeWork') === 'stopWork')
+            return
+
+        if (begin < 0 || end < 0 || begin > db.size() || end > db.size() || begin > end)
+            throw new Error('invalid range: ' + begin + '-' + end)
+
+        sim.delayedSection(function()
+        {
+            if (current >= begin + count/2)
+                if(sim.pointOfFailure('atWork') === 'stopWork')
+                    return false;
+
+            var isLast = ++current >= end
+            var returnVal = visitor(app.db.data[current], current, isLast)
+
+            view.db.setModelColor(current, 0, '#A5F7B8')
+            view.db.setModelColor(current, config.client.highlightTime)
+            return !isLast && (returnVal !== 'abort' || !returnVal)
+        })
+    }
     return db
-}();
+}()
 
 //-----------------------------------------------------------------------------------------
-
 
 app.networkInfo = function()
 {
-    var netInfo = {};
+    var netInfo = {}
 
-    /**
-     * @param nodes list of nodes
-     *
-     * Student TODO (Task: app.NetworkInfo in client): Update the local simulation configuration,
-     *              create the correct type of message and send the nodes list to the server (to the network).
-     */
     netInfo.activeChange = function(nodes)
-    {
-        sim.log('app', 'log', '⟶', nodes);
+    { sim.log('app', 'log', '⟶', nodes)
 
-        if (app.clientId in nodes){
-            sim.config = nodes[app.clientId].simconfig;
-        }
+        if (nodes[app.clientId])
+            sim.config = nodes[app.clientId].simconfig
 
-        network.connection.send(messages.channelMsg('Ws', messages.networkInfoMsg(nodes)))
-    };
+        var msg = messages.networkInfoMsg(nodes)
+        var channelMsg = messages.channelMsg('Ws', msg)
+        network.connection.send(channelMsg)
+    }
 
-    /**
-     * @param c client/connection object
-     * @param parsed parsed object containing new node configuration
-     *
-     * Student TODO (Task: app.NetworkInfo in client): Update the local simulation configuration and update the database
-     *              range maintained by this client. (Check if message is relevant first!)
-     * Student TODO (Task: app.NetworkInfo in client): Update the view accordingly.
-     */
     netInfo.passiveChange = function(c, parsed)
     {
-        view.networkInfo.update(parsed);
-        if (app.clientId in parsed.nodes){
-            sim.config = parsed.nodes[app.clientId].simconfig;
-            view.db.setRange(parsed.nodes[app.clientId].range);
-        }
-    };
+        if (parsed.nodes[app.clientId])
+            view.db.setRange(parsed.nodes[app.clientId].range)
+
+        if (parsed.nodes[app.clientId])
+            sim.config = parsed.nodes[app.clientId].simconfig
+
+        view.networkInfo.update(parsed)
+    }
     return netInfo
-}();
+}()
 
 //-----------------------------------------------------------------------------------------
-
-
-
-

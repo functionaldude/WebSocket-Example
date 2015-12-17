@@ -7,31 +7,31 @@
         return this.config[test] && this.config[test].active
     }
 
-    exports.pointOfFailure = function(pointName, c, p)
+    exports.pointOfFailure = function(pointName, c)
     {
         if (this.config.disconnect && this.config.disconnect.active)
             if (pointName === this.config.disconnect.pof)
-                c.close()
+                if (c)
+                    c.close()
 
         if (this.config.exception && this.config.exception.active)
             if (pointName === this.config.exception.pof)
-                throw new Error(this.config.exception.value)
-
-        if (this.config.delegate && this.config.delegate.active)
-            if (pointName === 'beforeWork')
-                p.payload.type = 'Delegate'
+                throw new Error(this.config.exception.value)        
+    
+        if (this.config.stopWork && this.config.stopWork.active)
+            if (pointName === this.config.stopWork.pof)
+                return 'stopWork';
+        return undefined;        
     }
 
-    exports.delayedSection = function(j, action)
+    exports.delayedSection = function(action)
     {
         if (this.isEnabled('delayed'))
         {
             setTimeout(function()
-            {
-                j.exception2localError(function()
-                {
-                    if (action()) exports.delayedSection(j, action)
-                })
+            {                
+                if (action())
+                    exports.delayedSection(action)
             },
             exports.config.delayed.value)
         }
@@ -41,6 +41,9 @@
         }
     }
 
+    /*
+     * describe hidden arguments (take a look on the arguments docs)
+     */
     exports.log = function()
     {
         var argArray = Array.prototype.slice.call(arguments)
@@ -51,7 +54,7 @@
         if (shellMode)
             desc = '\n------------------------------------------------------------\n' + category
 
-        if (!this.config || this.config['log' + category].active)
+        if (!this.config || this.config[category].active)
         {
             var remainingsArgs = JSON.parse(JSON.stringify(argArray.slice(2)))
             var logArgs = [desc].concat(remainingsArgs)

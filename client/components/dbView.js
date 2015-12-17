@@ -39,8 +39,7 @@ function dbView()
         viewElement.onclick = function()
         {
             var activeTab = $('.search:visible')[0]
-            if (activeTab.busy) view.insertTab(dbItem).startQuery()
-            else activeTab.startQuery(dbItem)
+            view.insertTab(dbItem).startQuery()
         }
         $("#database #entities").append(viewElement)
     }
