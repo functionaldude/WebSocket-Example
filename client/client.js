@@ -108,7 +108,7 @@ app.onNetworkStateChange = function(state, connection)
         onConnecting: function()
         {
             view.setConnectionInfo('Auto reconnect \u21c4')
-        },visitRange
+        },
 
         onConnected: function()
         {
