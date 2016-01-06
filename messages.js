@@ -27,23 +27,25 @@
     // These messages are intended to be sent over the 'Job' channel,
     // i.e. they should be wrapped in a channelMsg with a type of 'Job'.
     
-    exports.searchMsg = function(param, range /*, more parameters */)
+    exports.searchMsg = function(param, clientId, qId)
     {
         var msg = {}
         msg.type = 'Search'
         msg.param = param
-        msg.range = range
-        // STUDENT TODO: add more parameters if necessary
-        
-        msg.toString = function() { return msg.range.begin + '-' + msg.range.end }
+        msg.clientId = clientId
+        msg.qId = qId
+
+        msg.toString = function() { return msg.range.begin + '-' + msg.range.end + '-' + msg.clientId }
         return msg
     }
 
-    exports.searchResponseMsg = function(/* STUDENT TODO: add parameers */)
+    exports.searchResponseMsg = function(result, clientId, qId)
     {
         var msg = {}
         msg.type = 'Matches'
-        // STUDENT TODO
+        msg.result = result;
+        msg.clientId = clientId;
+        msg.qId = qId
 
         return msg
     }

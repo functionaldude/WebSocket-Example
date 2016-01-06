@@ -54,8 +54,18 @@ app.onMessage = function(c, parsed)
         },
 
         onJobMessage: function(c, parsed)
-        {
-            // STUDENT TODO:
+        {sim.log('app', 'log', '⟵', parsed)
+
+            var messageHandlers = {
+
+                onSearch: function(c, parsed){
+                    network.sendBroadcast(messages.channelMsg('Job', parsed))
+                },
+                onMatches: function(c, parsed){
+                    network.connections[parsed.clientId].send(messages.channelMsg('Job', parsed))
+                }
+
+            }['on'+parsed.type](c, parsed)
         }
 
     }['on'+parsed.type+'Message'](c, parsed.payload)
@@ -108,7 +118,7 @@ app.networkInfo = function()
             sim.config = changedNodes[app.clientId].simconfig
 
         updateRanges()
-        console.log(netInfo.nodes)
+        //console.log(netInfo.nodes)
     }
 
     netInfo.addNode = function(changedConnection)

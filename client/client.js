@@ -1,6 +1,8 @@
 var app = {}
 app.clientId = undefined
 app.wsUrl = 'ws://' + document.location.hostname + ':' + config.server.wsport
+app.range = undefined
+app.queryViews = {}
 app.setClientId = function(yourId)
 {
     app.clientId = yourId    
@@ -33,7 +35,9 @@ app.search = function(queryView, param)
     // The code in this function is meant to provide you with examples on how
     // to use the various functions. Most of it does *not* belong here in your
     // solution.
-    
+
+    app.queryViews[queryView.id] = queryView
+
     queryView.oncancelclick = function()
     {
         sim.log('app', 'log', 'user clicked cancel')
@@ -54,23 +58,18 @@ app.search = function(queryView, param)
         throw e
     }
 
-    queryView.setResultItems([{
-        dbEntity:{
-            mid: 7,
-            thumbnailUrl:'../db/thumbnails/m7_thumb.png'
-        },
-        diff:9
-    },
-    {
-        dbEntity:{
-            mid: 7,
-            thumbnailUrl:'../db/thumbnails/m7_thumb.png'
-        },
-        diff:9
-    }])
+    var msg = messages.searchMsg(param, app.clientId, queryView.id)
+    network.connection.send(messages.channelMsg('Job', msg))
 
-    var first = 50;
-    var last = 99;
+}
+
+app.searchDB = function(param, client){
+
+    var first = app.range.begin;
+    var last = app.range.end;
+
+    var result = [];
+
     app.db.visitRange(first, last, function(entity, idx, isLast)
     {
         // the delay is implemented with a timer,
@@ -78,7 +77,10 @@ app.search = function(queryView, param)
         // so catch exceptions here (never throw a exceptin to a timer callback)
         try {
             sim.log('own', 'log', 'visiting', idx, entity)
-            queryView.updateViewState('running', 'Running local search on entity: ' + idx, idx)
+            //queryView.updateViewState('running', 'Running local search on entity: ' + idx, idx)
+
+            var res = compareEntity(entity, param)
+            if (res != undefined) result.push(res)
 
             // After half of the work, simulate a "point of failure."
             // Depending on the configuration, sim.pointOfFailure might
@@ -89,14 +91,18 @@ app.search = function(queryView, param)
                 if(sim.pointOfFailure('atWork') === 'stopWork')
                     return 'abort';
 
-            if (isLast)
-                queryView.updateViewState('ok', 'we did something')
+            if (isLast){
+                //queryView.setResultItems(result)
+                var msg = messages.searchResponseMsg(result, client.id, client.qId)
+                network.connection.send(messages.channelMsg('Job', msg))
+
+                //queryView.updateViewState('ok', 'we did something')
+            }
         } catch(e) {
-            // Handle the exception hrrtr 
+            // Handle the exception hrrtr
             return 'abort';
         }
     })
-
 }
 
 // called by Net --------------------------------------------------------------------------
@@ -157,7 +163,31 @@ app.onMessage = function(c, parsed)
             sim.log('app', 'log', '⟵', parsed)
             sim.pointOfFailure('onRequest', c)
 
-            // STUDENT TODO:
+            var messageHandlers = {
+
+                onSearch: function(c, parsed){
+                    app.searchDB(parsed.param, {id:parsed.clientId, qId:parsed.qId})
+                },
+
+                onMatches: function(c, parsed){
+                    if (app.queryViews[parsed.qId].result){
+                        parsed.result.forEach(function(entry){
+                            app.queryViews[parsed.qId].result.push(entry)
+                        })
+                    } else {
+                        app.queryViews[parsed.qId].result = parsed.result
+                    }
+
+                    //sort result
+                    app.queryViews[parsed.qId].result = app.queryViews[parsed.qId].result.sort(function(a,b){
+                        return a.diff - b.diff
+                    })
+
+                    app.queryViews[parsed.qId].setResultItems(app.queryViews[parsed.qId].result)
+                    app.queryViews[parsed.qId].updateViewState('ok', 'we did something')
+                }
+
+            }['on'+parsed.type](c, parsed)
         }
 
     }['on'+parsed.type+'Message'](c, parsed.payload)
@@ -254,8 +284,10 @@ app.networkInfo = function()
 
     netInfo.passiveChange = function(c, parsed)
     {
-        if (parsed.nodes[app.clientId])
+        if (parsed.nodes[app.clientId]){
             view.db.setRange(parsed.nodes[app.clientId].range)
+            app.range = parsed.nodes[app.clientId].range
+        }
 
         if (parsed.nodes[app.clientId])
             sim.config = parsed.nodes[app.clientId].simconfig
