@@ -35,16 +35,34 @@
         msg.clientId = clientId
         msg.qId = qId
 
-        msg.toString = function() { return msg.range.begin + '-' + msg.range.end + '-' + msg.clientId }
         return msg
     }
 
-    exports.searchResponseMsg = function(result, clientId, qId)
+    exports.searchRequestMsg = function(param, searchId)
+    {
+        var msg = {}
+        msg.type = 'Request'
+        msg.param = param
+        msg.searchId = searchId
+
+        return msg
+    }
+
+    exports.searchResponseMsg = function(result, searchId)
     {
         var msg = {}
         msg.type = 'Matches'
         msg.result = result;
-        msg.clientId = clientId;
+        msg.searchId = searchId
+
+        return msg
+    }
+
+    exports.searchStateMsg = function(state, qId)
+    {
+        var msg = {}
+        msg.type = 'State'
+        msg.state = state;
         msg.qId = qId
 
         return msg

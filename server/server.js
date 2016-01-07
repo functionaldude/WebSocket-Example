@@ -7,6 +7,8 @@ var tools    = require('../tools.js')
 var app = {}
 app.clientId = 0
 sim.config = config.server.defaultSimConfig
+app.searches = {}
+app.searchCounter = 0
 
 // called by Net --------------------------------------------------------------------------
 
@@ -59,10 +61,26 @@ app.onMessage = function(c, parsed)
             var messageHandlers = {
 
                 onSearch: function(c, parsed){
-                    network.sendBroadcast(messages.channelMsg('Job', parsed))
+                    var id = app.searchCounter++
+                    app.searches[id] = {
+                        state:'pending',
+                        clientId:c.id,
+                        clientCtn: network.connectionCount(),
+                        qId:parsed.qId
+                    }
+                    var msg = messages.searchRequestMsg(parsed.param, id)
+                    network.sendBroadcast(messages.channelMsg('Job', msg))
                 },
                 onMatches: function(c, parsed){
-                    network.connections[parsed.clientId].send(messages.channelMsg('Job', parsed))
+                    var search = app.searches[parsed.searchId]
+                    search.clientCtn--
+                    parsed.qId = search.qId
+                    network.connections[search.clientId].send(messages.channelMsg('Job', parsed))
+                    //TODO: state ok
+                    if (search.clientCtn == 0){
+                        var msg = messages.searchStateMsg('ok', search.qId)
+                        network.connections[search.clientId].send(messages.channelMsg('Job', msg))
+                    }
                 }
 
             }['on'+parsed.type](c, parsed)

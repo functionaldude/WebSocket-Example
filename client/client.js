@@ -37,6 +37,7 @@ app.search = function(queryView, param)
     // solution.
 
     app.queryViews[queryView.id] = queryView
+    app.queryViews[queryView.id].result = []
 
     queryView.oncancelclick = function()
     {
@@ -63,12 +64,10 @@ app.search = function(queryView, param)
 
 }
 
-app.searchDB = function(param, client){
+app.searchDB = function(param, searchId){
 
     var first = app.range.begin;
     var last = app.range.end;
-
-    var result = [];
 
     app.db.visitRange(first, last, function(entity, idx, isLast)
     {
@@ -80,7 +79,11 @@ app.searchDB = function(param, client){
             //queryView.updateViewState('running', 'Running local search on entity: ' + idx, idx)
 
             var res = compareEntity(entity, param)
-            if (res != undefined) result.push(res)
+
+            if (res != undefined){
+                var msg = messages.searchResponseMsg(res, searchId)
+                network.connection.send(messages.channelMsg('Job', msg))
+            }
 
             // After half of the work, simulate a "point of failure."
             // Depending on the configuration, sim.pointOfFailure might
@@ -93,9 +96,6 @@ app.searchDB = function(param, client){
 
             if (isLast){
                 //queryView.setResultItems(result)
-                var msg = messages.searchResponseMsg(result, client.id, client.qId)
-                network.connection.send(messages.channelMsg('Job', msg))
-
                 //queryView.updateViewState('ok', 'we did something')
             }
         } catch(e) {
@@ -165,18 +165,13 @@ app.onMessage = function(c, parsed)
 
             var messageHandlers = {
 
-                onSearch: function(c, parsed){
-                    app.searchDB(parsed.param, {id:parsed.clientId, qId:parsed.qId})
+                onRequest: function(c, parsed){
+                    app.searchDB(parsed.param, parsed.searchId)
                 },
 
                 onMatches: function(c, parsed){
-                    if (app.queryViews[parsed.qId].result){
-                        parsed.result.forEach(function(entry){
-                            app.queryViews[parsed.qId].result.push(entry)
-                        })
-                    } else {
-                        app.queryViews[parsed.qId].result = parsed.result
-                    }
+
+                    app.queryViews[parsed.qId].result.push(parsed.result)
 
                     //sort result
                     app.queryViews[parsed.qId].result = app.queryViews[parsed.qId].result.sort(function(a,b){
@@ -184,7 +179,12 @@ app.onMessage = function(c, parsed)
                     })
 
                     app.queryViews[parsed.qId].setResultItems(app.queryViews[parsed.qId].result)
-                    app.queryViews[parsed.qId].updateViewState('ok', 'we did something')
+                },
+
+                onState: function(c, parsed){
+                    if (parsed.state == 'ok'){
+                        app.queryViews[parsed.qId].updateViewState('ok', 'we did something')
+                    }
                 }
 
             }['on'+parsed.type](c, parsed)
