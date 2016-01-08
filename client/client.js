@@ -95,6 +95,8 @@ app.searchDB = function(param, searchId){
                     return 'abort';
 
             if (isLast){
+                var msg = messages.searchStateMsg('ok', searchId)
+                network.connection.send(messages.channelMsg('Job', msg))
                 //queryView.setResultItems(result)
                 //queryView.updateViewState('ok', 'we did something')
             }
@@ -183,7 +185,7 @@ app.onMessage = function(c, parsed)
 
                 onState: function(c, parsed){
                     if (parsed.state == 'ok'){
-                        app.queryViews[parsed.qId].updateViewState('ok', 'we did something')
+                        app.queryViews[parsed.id].updateViewState('ok', 'we did something')
                     }
                 }
 

@@ -58,12 +58,12 @@
         return msg
     }
 
-    exports.searchStateMsg = function(state, qId)
+    exports.searchStateMsg = function(state, id)
     {
         var msg = {}
         msg.type = 'State'
         msg.state = state;
-        msg.qId = qId
+        msg.id = id
 
         return msg
     }

@@ -71,15 +71,21 @@ app.onMessage = function(c, parsed)
                     var msg = messages.searchRequestMsg(parsed.param, id)
                     network.sendBroadcast(messages.channelMsg('Job', msg))
                 },
+
                 onMatches: function(c, parsed){
                     var search = app.searches[parsed.searchId]
-                    search.clientCtn--
                     parsed.qId = search.qId
                     network.connections[search.clientId].send(messages.channelMsg('Job', parsed))
-                    //TODO: state ok
-                    if (search.clientCtn == 0){
-                        var msg = messages.searchStateMsg('ok', search.qId)
-                        network.connections[search.clientId].send(messages.channelMsg('Job', msg))
+                },
+
+                onState: function(c, parsed){
+                    var search = app.searches[parsed.id]
+                    if (parsed.state == 'ok'){
+                        search.clientCtn--
+                        if (search.clientCtn == 0){
+                            var msg = messages.searchStateMsg('ok', search.qId)
+                            network.connections[search.clientId].send(messages.channelMsg('Job', msg))
+                        }
                     }
                 }
 
