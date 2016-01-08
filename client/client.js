@@ -79,11 +79,15 @@ app.searchDB = function(param, searchId){
             //queryView.updateViewState('running', 'Running local search on entity: ' + idx, idx)
 
             var res = compareEntity(entity, param)
-
+            var msg = undefined
             if (res != undefined){
-                var msg = messages.searchResponseMsg(res, searchId)
+                msg = messages.searchResponseMsg(res, searchId)
                 network.connection.send(messages.channelMsg('Job', msg))
             }
+
+            msg = messages.searchStateMsg('progress', searchId, 1)
+            network.connection.send(messages.channelMsg('Job', msg))
+
 
             // After half of the work, simulate a "point of failure."
             // Depending on the configuration, sim.pointOfFailure might
@@ -95,7 +99,7 @@ app.searchDB = function(param, searchId){
                     return 'abort';
 
             if (isLast){
-                var msg = messages.searchStateMsg('ok', searchId)
+                msg = messages.searchStateMsg('ok', searchId)
                 network.connection.send(messages.channelMsg('Job', msg))
                 //queryView.setResultItems(result)
                 //queryView.updateViewState('ok', 'we did something')
@@ -186,6 +190,9 @@ app.onMessage = function(c, parsed)
                 onState: function(c, parsed){
                     if (parsed.state == 'ok'){
                         app.queryViews[parsed.id].updateViewState('ok', 'we did something')
+                    }
+                    if (parsed.state == 'progress'){
+                        app.queryViews[parsed.id].updateViewState('running', 'Shit! Fuck! Shit! Fuck!', parsed.progress)
                     }
                 }
 

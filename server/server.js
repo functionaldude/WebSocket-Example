@@ -66,7 +66,8 @@ app.onMessage = function(c, parsed)
                         state:'pending',
                         clientId:c.id,
                         clientCtn: network.connectionCount(),
-                        qId:parsed.qId
+                        qId:parsed.qId,
+                        progress:0
                     }
                     var msg = messages.searchRequestMsg(parsed.param, id)
                     network.sendBroadcast(messages.channelMsg('Job', msg))
@@ -80,13 +81,21 @@ app.onMessage = function(c, parsed)
 
                 onState: function(c, parsed){
                     var search = app.searches[parsed.id]
+                    var msg = undefined
+
                     if (parsed.state == 'ok'){
                         search.clientCtn--
                         if (search.clientCtn == 0){
-                            var msg = messages.searchStateMsg('ok', search.qId)
+                            msg = messages.searchStateMsg('ok', search.qId)
                             network.connections[search.clientId].send(messages.channelMsg('Job', msg))
                             delete app.searches[parsed.id]
                         }
+                    }
+
+                    if (parsed.state == 'progress'){
+                        search.progress += parsed.progress
+                        msg = messages.searchStateMsg('progress', search.qId, search.progress)
+                        network.connections[search.clientId].send(messages.channelMsg('Job', msg))
                     }
                 }
 

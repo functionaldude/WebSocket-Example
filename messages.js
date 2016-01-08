@@ -58,12 +58,13 @@
         return msg
     }
 
-    exports.searchStateMsg = function(state, id)
+    exports.searchStateMsg = function(state, id, progress)
     {
         var msg = {}
         msg.type = 'State'
         msg.state = state;
         msg.id = id
+        msg.progress = progress
 
         return msg
     }
