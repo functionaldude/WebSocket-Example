@@ -215,6 +215,10 @@ app.networkInfo = function()
         var msg = messages.networkInfoMsg(nodes)
         var channelMsg = messages.channelMsg('Ws', msg)
         network.sendBroadcast(channelMsg)
+
+        msg = messages.networkInfoMsg(netInfo.nodes)
+        channelMsg = messages.channelMsg('Ws', msg)
+        network.sendBroadcast(channelMsg)
     }
 
     netInfo.passiveChange = function(c, parsed)
