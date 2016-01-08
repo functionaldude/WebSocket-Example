@@ -211,6 +211,9 @@ app.onMessage = function(c, parsed)
                     if (parsed.state == 'cancelled'){
                         app.queryViews[parsed.id].updateViewState('cancelled')
                     }
+                    if (parsed.state == 'timeout'){
+                        app.queryViews[parsed.id].updateViewState('timeout')
+                    }
                 },
 
                 onCancel: function(c, parsed){

@@ -71,6 +71,19 @@ app.onMessage = function(c, parsed)
                     }
                     var msg = messages.searchRequestMsg(parsed.param, id)
                     network.sendBroadcast(messages.channelMsg('Job', msg))
+                    setTimeout(function(){
+                        var search = app.searches[id]
+                        if (search != undefined){
+                            //cancel job
+                            search.state = 'cancelled'
+                            var msg = messages.searchCancelMsg(id)
+                            network.sendBroadcast(messages.channelMsg('Job', msg))
+
+                            msg = messages.searchStateMsg('timeout', search.qId, search.progress)
+                            network.connections[search.clientId].send(messages.channelMsg('Job', msg))
+                            delete app.searches[id]
+                        }
+                    }, config.client.overallTimeout)
                 },
 
                 onMatches: function(c, parsed){
