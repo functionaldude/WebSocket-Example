@@ -68,6 +68,15 @@
 
         return msg
     }
+
+    exports.searchCancelMsg = function(id)
+    {
+        var msg = {}
+        msg.type = 'Cancel'
+        msg.id = id
+
+        return msg
+    }
     
     // STUDENT TODO: add more message types as necessary
 

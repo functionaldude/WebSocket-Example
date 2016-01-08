@@ -63,7 +63,7 @@ app.onMessage = function(c, parsed)
                 onSearch: function(c, parsed){
                     var id = app.searchCounter++
                     app.searches[id] = {
-                        state:'pending',
+                        state:'running',
                         clientId:c.id,
                         clientCtn: network.connectionCount(),
                         qId:parsed.qId,
@@ -75,12 +75,16 @@ app.onMessage = function(c, parsed)
 
                 onMatches: function(c, parsed){
                     var search = app.searches[parsed.searchId]
+                    if (search == undefined || search.progress == 'cancelled') return;
+
                     parsed.qId = search.qId
                     network.connections[search.clientId].send(messages.channelMsg('Job', parsed))
                 },
 
                 onState: function(c, parsed){
                     var search = app.searches[parsed.id]
+                    if (search == undefined || search.progress == 'cancelled') return;
+
                     var msg = undefined
 
                     if (parsed.state == 'ok'){
@@ -97,6 +101,27 @@ app.onMessage = function(c, parsed)
                         msg = messages.searchStateMsg('progress', search.qId, search.progress)
                         network.connections[search.clientId].send(messages.channelMsg('Job', msg))
                     }
+                },
+
+                onCancel: function(c, parsed){
+                    var searchId = undefined
+                    Object.keys(app.searches).forEach(function(key){
+                        if (app.searches[key].clientId == c.id && app.searches[key].qId == parsed.id){
+                            searchId = key
+                        }
+                    })
+                    if (searchId == undefined) return
+                    var search = app.searches[searchId]
+
+                    search.state = 'cancelled'
+
+                    var msg = messages.searchCancelMsg(searchId)
+                    network.sendBroadcast(messages.channelMsg('Job', msg))
+
+                    msg = messages.searchStateMsg('cancelled', search.qId, search.progress)
+                    network.connections[search.clientId].send(messages.channelMsg('Job', msg))
+
+                    delete app.searches[searchId]
                 }
 
             }['on'+parsed.type](c, parsed)

@@ -3,6 +3,7 @@ app.clientId = undefined
 app.wsUrl = 'ws://' + document.location.hostname + ':' + config.server.wsport
 app.range = undefined
 app.queryViews = {}
+app.searches = {}
 app.setClientId = function(yourId)
 {
     app.clientId = yourId    
@@ -36,12 +37,16 @@ app.search = function(queryView, param)
     // to use the various functions. Most of it does *not* belong here in your
     // solution.
 
+    var msg = undefined
+
     app.queryViews[queryView.id] = queryView
     app.queryViews[queryView.id].result = []
 
     queryView.oncancelclick = function()
     {
         sim.log('app', 'log', 'user clicked cancel')
+        msg = messages.searchCancelMsg(queryView.id)
+        network.connection.send(messages.channelMsg('Job', msg))
     }
 
     // use sim.log instead of console.log to enable and disable
@@ -59,7 +64,7 @@ app.search = function(queryView, param)
         throw e
     }
 
-    var msg = messages.searchMsg(param, app.clientId, queryView.id)
+    msg = messages.searchMsg(param, app.clientId, queryView.id)
     network.connection.send(messages.channelMsg('Job', msg))
 
 }
@@ -76,6 +81,11 @@ app.searchDB = function(param, searchId){
         // so catch exceptions here (never throw a exceptin to a timer callback)
         try {
             sim.log('own', 'log', 'visiting', idx, entity)
+
+            if (app.searches[searchId].state == 'cancelled'){
+                delete app.searches[searchId]
+                return 'abort'
+            }
             //queryView.updateViewState('running', 'Running local search on entity: ' + idx, idx)
 
             var res = compareEntity(entity, param)
@@ -99,6 +109,7 @@ app.searchDB = function(param, searchId){
                     return 'abort';
 
             if (isLast){
+                delete app.searches[searchId]
                 msg = messages.searchStateMsg('ok', searchId)
                 network.connection.send(messages.channelMsg('Job', msg))
                 //queryView.setResultItems(result)
@@ -172,6 +183,9 @@ app.onMessage = function(c, parsed)
             var messageHandlers = {
 
                 onRequest: function(c, parsed){
+                    app.searches[parsed.searchId] = {
+                        state:'started'
+                    }
                     app.searchDB(parsed.param, parsed.searchId)
                 },
 
@@ -194,6 +208,13 @@ app.onMessage = function(c, parsed)
                     if (parsed.state == 'progress'){
                         app.queryViews[parsed.id].updateViewState('running', 'Shit! Fuck! Shit! Fuck!', parsed.progress)
                     }
+                    if (parsed.state == 'cancelled'){
+                        app.queryViews[parsed.id].updateViewState('cancelled')
+                    }
+                },
+
+                onCancel: function(c, parsed){
+                    app.searches[parsed.id].state = 'cancelled'
                 }
 
             }['on'+parsed.type](c, parsed)
