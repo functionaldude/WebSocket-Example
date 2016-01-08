@@ -85,6 +85,7 @@ app.onMessage = function(c, parsed)
                         if (search.clientCtn == 0){
                             var msg = messages.searchStateMsg('ok', search.qId)
                             network.connections[search.clientId].send(messages.channelMsg('Job', msg))
+                            delete app.searches[parsed.id]
                         }
                     }
                 }
