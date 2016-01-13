@@ -203,13 +203,13 @@ app.onMessage = function(c, parsed)
 
                 onState: function(c, parsed){
                     if (parsed.state == 'ok'){
-                        app.queryViews[parsed.id].updateViewState('ok', 'we did something')
+                        app.queryViews[parsed.id].updateViewState('ok', 'status')
                     }
                     if (parsed.state == 'progress'){
-                        app.queryViews[parsed.id].updateViewState('running', 'Shit! Fuck! Shit! Fuck!', parsed.progress)
+                        app.queryViews[parsed.id].updateViewState('running', 'calculated', parsed.progress)
                     }
                     if (parsed.state == 'cancelled'){
-                        app.queryViews[parsed.id].updateViewState('cancelled')
+                        app.queryViews[parsed.id].updateViewState('fatal','cancelled')
                     }
                     if (parsed.state == 'timeout'){
                         app.queryViews[parsed.id].updateViewState('timeout')
